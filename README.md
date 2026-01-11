@@ -1,5 +1,19 @@
-## application-project-group16
-A mobile application project for school by group 16
+## Sport Buddies - application project
+
+###  Description of the project
+A mobile application project for school by group 16.
+The app's idea is to search for sports friends. 
+
+Main ideas and concepts:
+  - Profiles are filtered according to the user's preferences.
+  - User can edit their own profile and preferences
+  - Friend users can see each other's locations if permission was granted and GPS is on
+  - Friend users can chat with each other
+  - User can search for the nearest sports places, like gyms, using the Google Maps API
+
+Monetization ideas:
+  - If the user isn't a premium member, they will receive ads, for example, between swipes. Features are also limited
+  - Premium members receive an ad-free version and full access to the features of the apps
 
 ### Links to the documents:
 
