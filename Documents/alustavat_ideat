@@ -1,0 +1,16 @@
+TEKNOLOGIA:
+    - react
+    - PO/SM kata ja henrik (vaihellaan)
+
+SOVELLUS IDEA:
+  "tinder" urheilukavereiden etsintään:
+    - swipe left or right
+    - filtterit
+    - tracker et missä kaverit sijaitsee kartalla
+    - lähimmät salit/muut urheilupaikat (google maps api: https://serpapi.com/google-maps-api)
+    - firebase datan säilyttämiseen
+    - chat
+
+LIIKETOIMINTA:
+    - jos ei maksa niin näkyy mainoksia esim urheilupaikoista, esimerkiksi swippien välissä
+    - jos ei maksa niin ei voi käyttää kaikkia toiminnallisuuksia
