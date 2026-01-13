@@ -24,3 +24,7 @@ Monetization ideas:
 [Excel for tracking hours](https://onedrive.live.com/personal/584f09549647c758/_layouts/15/Doc.aspx?sourcedoc=%7B5eacf32b-b192-43c7-a66c-835599aac66f%7D&action=default&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3gvYy81ODRmMDk1NDk2NDdjNzU4L0lRQXI4Nnhla3JISFE2WnNnMVdacXNadkFSWF9NSnRsaUFRMkdUdG4wYW1LZ0dzP2U9Y0QxV0Vi&slrid=d405eca1-70bc-b000-1a25-fc66a0d2b185&originalPath=aHR0cHM6Ly8xZHJ2Lm1zL3gvYy81ODRmMDk1NDk2NDdjNzU4L0lRQXI4Nnhla3JISFE2WnNnMVdacXNadkFSWF9NSnRsaUFRMkdUdG4wYW1LZ0dzP3J0aW1lPXlUdHpQRHBSM2tn&CID=acbf47cb-c03e-434e-b92a-b9180376db7d&_SRM=0:G:44)
 
 Moqups: not yet created
+
+### Technologies:
+
+Expo, VsCode
