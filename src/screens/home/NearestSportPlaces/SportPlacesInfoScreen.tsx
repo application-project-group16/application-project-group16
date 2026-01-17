@@ -3,6 +3,25 @@ import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Alert } from "re
 import MapView, { Marker } from "react-native-maps";
 import { BarChart } from "react-native-chart-kit";
 import * as Location from 'expo-location';
+import { useRoute } from "@react-navigation/native";
+
+const TYPE_CONFIG = {
+  gyms: {
+    query: `
+      node["leisure"="fitness_centre"];
+      node["amenity"="gym"];
+    `,
+    label: "gyms"
+  },
+  swimming_pools: {
+    query: `node["leisure"="swimming_pool"];`,
+    label: "swimming pools"
+  },
+  climbing_gyms: {
+    query: `node["sport"="climbing"];`,
+    label: "climbing gyms"
+  }
+};
 
 type Gym = {
   id: number;
@@ -49,8 +68,8 @@ export default function SportPlacesScreen() {
     }, []);
 
     useEffect(() => {
-    if (!userLocation) return;
-    const fetchGyms = async () => {
+        if (!userLocation) return;
+        const fetchGyms = async () => {
         setLoading(true);
         const radius = 5000;
         const query = `
@@ -81,15 +100,15 @@ export default function SportPlacesScreen() {
         Alert.alert("Error", "Failed to fetch gyms from Overpass API.");
         }
         setLoading(false);
-    };
-    fetchGyms();
+        };
+        fetchGyms();
     }, [userLocation]);
 
   if (loading || !userLocation) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
-        <Text>Loading gyms...</Text>
+        <Text>Loading -...</Text>
       </View>
     );
   }
@@ -115,7 +134,7 @@ export default function SportPlacesScreen() {
           />
         ))}
       </MapView>
-      <Text style={styles.header}>Top nearest gyms</Text>
+      <Text style={styles.header}>Top nearest -</Text>
       <BarChart
         data={{
           labels: gyms.slice(0, 5).map((g) => g.name.length > 10 ? g.name.slice(0, 10) + "…" : g.name),
