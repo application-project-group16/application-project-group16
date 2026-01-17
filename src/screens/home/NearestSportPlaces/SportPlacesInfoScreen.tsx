@@ -46,69 +46,77 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * c;
 }
 
-export default function SportPlacesScreen() {
+// FIX: Rename the component to match the file and navigation
+export default function SportPlacesInfoScreen() {
+  const route = useRoute();
+  const { type } = route.params as { type: keyof typeof TYPE_CONFIG };
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
-  const [gyms, setGyms] = useState<Gym[]>([]);
+  const [places, setPlaces] = useState<Gym[]>([]);
   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert("Permission denied", "Location permission is required.");
-            setLoading(false);
-            return;
-        }
-        let loc = await Location.getCurrentPositionAsync({});
-        setUserLocation({
-            lat: loc.coords.latitude,
-            lon: loc.coords.longitude,
-        });
-        })();
-    }, []);
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Permission denied", "Location permission is required.");
+        setLoading(false);
+        return;
+      }
+      let loc = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        lat: loc.coords.latitude,
+        lon: loc.coords.longitude,
+      });
+    })();
+  }, []);
 
-    useEffect(() => {
-        if (!userLocation) return;
-        const fetchGyms = async () => {
-        setLoading(true);
-        const radius = 5000;
-        const query = `
-        [out:json];
-        (
-            node["leisure"="fitness_centre"](around:${radius},${userLocation.lat},${userLocation.lon});
-            node["amenity"="gym"](around:${radius},${userLocation.lat},${userLocation.lon});
-        );
-        out body;
-        `;
-        try {
+  useEffect(() => {
+    if (!userLocation) return;
+    const fetchPlaces = async () => {
+      setLoading(true);
+      const radius = 5000;
+      const typeConfig = TYPE_CONFIG[type];
+      if (!typeConfig) {
+        Alert.alert("Error", "Unknown sport place type.");
+        setLoading(false);
+        return;
+      }
+      // Insert the around filter for Overpass query
+      const query = `
+[out:json];
+(
+  ${typeConfig.query.replace(/node\[(.*?)\];/g, (match, p1) => `node[${p1}](around:${radius},${userLocation.lat},${userLocation.lon});`)}
+);
+out body;
+      `;
+      try {
         const response = await fetch("https://overpass-api.de/api/interpreter", {
-            method: "POST",
-            body: query,
+          method: "POST",
+          body: query,
         });
         const data = await response.json();
-        console.log("Fetched gyms:", data);
-        const gymsWithDistance: Gym[] = data.elements.map((el: any) => ({
-            id: el.id,
-            name: el.tags?.name || "Unnamed Gym",
-            lat: el.lat,
-            lon: el.lon,
-            distance: haversine(userLocation.lat, userLocation.lon, el.lat, el.lon),
+        const placesWithDistance: Gym[] = data.elements.map((el: any) => ({
+          id: el.id,
+          name: el.tags?.name || `Unnamed ${typeConfig.label.slice(0, -1)}`,
+          lat: el.lat,
+          lon: el.lon,
+          distance: haversine(userLocation.lat, userLocation.lon, el.lat, el.lon),
         }));
-        setGyms(gymsWithDistance.sort((a, b) => a.distance - b.distance));
-        } catch (e) {
+        setPlaces(placesWithDistance.sort((a, b) => a.distance - b.distance));
+      } catch (e) {
         console.log("Overpass fetch error:", e);
-        Alert.alert("Error", "Failed to fetch gyms from Overpass API.");
-        }
-        setLoading(false);
-        };
-        fetchGyms();
-    }, [userLocation]);
+        Alert.alert("Error", "Failed to fetch sport places from Overpass API.");
+      }
+      setLoading(false);
+    };
+    fetchPlaces();
+  }, [userLocation, type]);
 
   if (loading || !userLocation) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
-        <Text>Loading -...</Text>
+        <Text>Loading...</Text>
       </View>
     );
   }
@@ -125,20 +133,20 @@ export default function SportPlacesScreen() {
         }}
         showsUserLocation
       >
-        {gyms.map((gym) => (
+        {places.map((place) => (
           <Marker
-            key={gym.id}
-            coordinate={{ latitude: gym.lat, longitude: gym.lon }}
-            title={gym.name}
-            description={`Distance: ${gym.distance.toFixed(0)} m`}
+            key={place.id}
+            coordinate={{ latitude: place.lat, longitude: place.lon }}
+            title={place.name}
+            description={`Distance: ${place.distance.toFixed(0)} m`}
           />
         ))}
       </MapView>
-      <Text style={styles.header}>Top nearest -</Text>
+      <Text style={styles.header}>Top nearest {TYPE_CONFIG[type]?.label}</Text>
       <BarChart
         data={{
-          labels: gyms.slice(0, 5).map((g) => g.name.length > 10 ? g.name.slice(0, 10) + "…" : g.name),
-          datasets: [{ data: gyms.slice(0, 5).map((g) => Math.round(g.distance)) }],
+          labels: places.slice(0, 5).map((g) => g.name.length > 10 ? g.name.slice(0, 10) + "…" : g.name),
+          datasets: [{ data: places.slice(0, 5).map((g) => Math.round(g.distance)) }],
         }}
         width={Dimensions.get("window").width - 16}
         height={220}
