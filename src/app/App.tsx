@@ -1,9 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from './src/screens/home/HomeScreen';
-import SwipeScreen from './src/screens/swipe/SwipeScreen';
-import { RootStackParamList } from './src/types/navigation'; 
+import HomeScreen from '../screens/home/HomeScreen';
+import SwipeScreen from '../screens/swipe/SwipeScreen';
+import { RootStackParamList } from '../types/navigation'; 
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 

@@ -39,16 +39,23 @@ const SwipeScreen: React.FC = () => {
   const [cards, setCards] = useState<SwipeCard[]>([])
   const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  //const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState('Testuser1')
+
 
   const position = useRef(new Animated.ValueXY()).current
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
-      setCurrentUserId(user?.uid ?? null)
-    })
-    return () => unsubscribe()
-  }, [])
+      if (user) {
+      setCurrentUserId(user.uid)
+    } else {
+      setCurrentUserId(null)
+      setLoading(false) 
+    }
+  })
+  return () => unsubscribe()
+}, [])
 
   useEffect(() => {
     if (!currentUserId) return
@@ -61,15 +68,20 @@ const SwipeScreen: React.FC = () => {
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as UserProfile | undefined
           if (!data || !Array.isArray(data.sports)) return
+          //console.log(docSnap.id, 'sports:', data.sports, typeof data.sports);
 
           if (docSnap.id !== currentUserId && data.sports.some((sport) => userInterests.includes(sport))) {
+            //console.log('Included:', docSnap.id);
             profiles.push({ id: docSnap.id, ...data })
+            //} else {
+            //console.log('Skipped:', docSnap.id);
           }
         })
 
         setCards(profiles)
       } catch (error) {
-        console.error("Fetch error:", error)
+        console.error('Firebase fetchProfiles failed:', error)
+        Alert.alert('Error loading profiles', 'Please try again later.')
       } finally {
         setLoading(false)
       }
@@ -87,7 +99,7 @@ const SwipeScreen: React.FC = () => {
       })
 
       if (card.image) {
-        await uploadFile(card.image, `uploads/${currentUserId}/${card.id}.jpg`);
+        await uploadFile(card.image, `uploads/${currentUserId}/${card.id}.jpg`)
       }
 
       const likedUserSnap = await getDoc(doc(db, 'users', card.id))
