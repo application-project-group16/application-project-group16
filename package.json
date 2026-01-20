@@ -1,7 +1,7 @@
 {
+  "main": "src/app/index.ts",
   "name": "src",
   "version": "1.0.0",
-  "main": "app/index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
