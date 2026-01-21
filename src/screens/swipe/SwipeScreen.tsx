@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { View, Text, StyleSheet, Image, ActivityIndicator, Alert, Animated, PanResponder, Dimensions } from 'react-native'
 import { db, auth, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setDoc, storage } from '../../firebase/Config'
-import { ref, uploadBytesResumable } from 'firebase/storage'
 import { UserProfile } from '../../types/userProfile'
 
 import type { Animated as AnimatedType, ViewStyle } from 'react-native'
@@ -18,27 +17,6 @@ const CARD_HEIGHT = SCREEN_HEIGHT * 0.7
 const CARD_WIDTH = SCREEN_WIDTH * 0.9
 
 const userInterests = ['Jalkapallo', 'Tennis']
-
-const uploadFile = async (uri: string, path: string) => {
-  try {
-    const response = await fetch(uri)
-    const blob = await response.blob()
-    const storageRef = ref(storage, path)
-    const uploadTask = uploadBytesResumable(storageRef, blob)
-
-    uploadTask.on(
-      'state_changed',
-      snapshot => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-        console.log('Upload is ' + progress + '% done')
-      },
-      error => console.error(error),
-      () => console.log('Upload complete!')
-    )
-  } catch (error) {
-    console.error('Upload failed:', error)
-  }
-}
 
 const SwipeScreen: React.FC = () => {
   const [cards, setCards] = useState<SwipeCard[]>([])
@@ -97,46 +75,6 @@ const SwipeScreen: React.FC = () => {
     fetchProfiles()
   }, [currentUserId])
 
-  const onSwipeComplete = async (direction: 'right' | 'left') => {
-    const card = cards[currentIndex]
-    if (!card || !currentUserId) return
-
-    if (direction === 'right') {
-      console.log('Swiping right:', { currentUserId, cardId: card.id })
-    try {
-      await updateDoc(doc(db, 'users', currentUserId), {
-        likedUsers: arrayUnion(card.id),
-      })
-      console.log('Update sent')
-    } catch (err) {
-      console.error('Error updating likedUsers:', err)
-    }
-  }
-
-  const likedUserSnap = await getDoc(doc(db, 'users', card.id))
-  const likedUserData = likedUserSnap.data() as UserProfile | undefined
-
-  if (likedUserData?.likedUsers?.includes(currentUserId)) {
-    await setDoc(doc(collection(db, 'matches')), {
-      users: [currentUserId, card.id],
-      createdAt: new Date(),
-    })
-    Alert.alert('You got a new match!')
-  }
-
-    setCurrentIndex(prev => prev + 1)
-    position.setValue({ x: 0, y: 0 })
-  }
-
-  const forceSwipe = (direction: 'right' | 'left') => {
-    const x = direction === 'right' ? SCREEN_WIDTH + 100 : -SCREEN_WIDTH - 100
-    Animated.timing(position, {
-      toValue: { x, y: 0 },
-      duration: SWIPE_OUT_DURATION,
-      useNativeDriver: false,
-    }).start(() => onSwipeComplete(direction))
-  }
-
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -158,53 +96,96 @@ const SwipeScreen: React.FC = () => {
     })
   ).current
 
-  const renderCards = () => {
-    if (currentIndex >= cards.length) {
-      return (
-        <View style={styles.noMoreContainer}>
-          <Text style={styles.noMoreCards}>No more profiles</Text>
-        </View>
-      )
+  const forceSwipe = (direction: 'right' | 'left') => {
+  const x = direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5
+  const y = 0;
+  
+  Animated.timing(position, {
+      toValue: { x, y },
+      duration: SWIPE_OUT_DURATION,
+      useNativeDriver: false,
+    }).start(() => onSwipeComplete(direction))
+  }
+
+  const onSwipeComplete = async (direction: 'right' | 'left') => {
+    const card = cards[currentIndex]
+    if (!card || !currentUserId) return
+
+    if (direction === 'right') {
+      console.log('Swiping right:', { currentUserId, cardId: card.id })
+    try {
+      await updateDoc(doc(db, 'users', currentUserId), {
+        likedUsers: arrayUnion(card.id),
+      })
+      console.log('Update sent')
+
+    const likedUserSnap = await getDoc(doc(db, 'users', card.id))
+    const likedUserData = likedUserSnap.data() as UserProfile | undefined
+
+    if (likedUserData?.likedUsers?.includes(currentUserId)) {
+      await setDoc(doc(collection(db, 'matches')), {
+        users: [currentUserId, card.id],
+        createdAt: new Date(),
+      })
+        Alert.alert('You got a new match!')
+      }
+    } catch (err) {
+      console.error('Error updating likedUsers or matches:', err)
+    }
+  }
+      setCurrentIndex(prev => prev + 1)
+      position.setValue({ x: 0, y: 0 })
     }
 
-    return cards.map((card, index) => {
-      if (index < currentIndex) return null
+    const renderCards = () => {
+      if (currentIndex >= cards.length) {
+        return (
+          <View style={styles.noMoreContainer}>
+            <Text style={styles.noMoreCards}>No more profiles</Text>
+          </View>
+        )
+      }
 
-      const isTop = index === currentIndex
+      return cards
+    .map((card, index) => {
+      if (index < currentIndex) return null;
+
+      const isTop = index === currentIndex;
+
       const rotate = position.x.interpolate({
         inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
         outputRange: ['-30deg', '0deg', '30deg'],
-      })
+      });
 
-      const animatedStyle: AnimatedType.WithAnimatedObject<ViewStyle> | undefined = isTop ? {
-        transform: [
-          { translateX: position.x },
-          { translateY: position.y },
-          { rotate },
-        ],
-      }
-      : undefined
+      const animatedStyle: Animated.WithAnimatedObject<ViewStyle> = isTop
+        ? {
+            transform: [
+              { translateX: position.x },
+              { translateY: position.y },
+              { rotate },
+            ],
+          }
+        : {};
 
-        return (
-          <Animated.View
-            key={`${card.id}-${currentIndex}`}
-            {...(isTop ? panResponder.panHandlers : {})}
-            style={[styles.card, animatedStyle, { zIndex: cards.length - index }]}
-          >
-            <Image
-              source={{
-                uri: card.image ?? `https://picsum.photos/seed/${card.id}/300`,
-              }}
-              style={styles.image}
-            />
-            <View style={styles.infoContainer}>
-              <Text style={styles.nameAge}>{card.name}, {card.age}</Text>
-              <Text style={styles.sports}>{card.sports.join(', ')}</Text>
-            </View>
-          </Animated.View>
-        )
+      return (
+        <Animated.View
+          key={card.id} // stable key
+          {...(isTop ? panResponder.panHandlers : {})}
+          style={[styles.card, animatedStyle, { zIndex: cards.length - index }]}
+        >
+          <Image
+            source={{ uri: card.image ?? `https://picsum.photos/seed/${card.id}/300` }}
+            style={styles.image}
+          />
+          <View style={styles.infoContainer}>
+            <Text style={styles.nameAge}>{card.name}, {card.age}</Text>
+            <Text style={styles.sports}>{card.sports.join(', ')}</Text>
+          </View>
+        </Animated.View>
+      )
     })
-  }
+    .reverse() 
+}
 
   if (loading) {
     return <ActivityIndicator size='large' style={{ flex: 1 }} />
