@@ -4,13 +4,18 @@ import { db, auth, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setD
 import { ref, uploadBytesResumable } from 'firebase/storage'
 import { UserProfile } from '../../types/userProfile'
 
+import type { Animated as AnimatedType, ViewStyle } from 'react-native'
+
 interface SwipeCard extends UserProfile {
   id: string
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
+const SCREEN_HEIGHT = Dimensions.get('window').height
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH
 const SWIPE_OUT_DURATION = 250
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.7
+const CARD_WIDTH = SCREEN_WIDTH * 0.9
 
 const userInterests = ['Jalkapallo', 'Tennis']
 
@@ -42,8 +47,11 @@ const SwipeScreen: React.FC = () => {
   //const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState('Testuser1')
 
-
   const position = useRef(new Animated.ValueXY()).current
+
+  useEffect(() => {
+    position.setValue({ x: 0, y: 0 })
+  }, [currentIndex])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
@@ -67,11 +75,11 @@ const SwipeScreen: React.FC = () => {
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as UserProfile | undefined
-          if (!data || !Array.isArray(data.sports)) return
+          if (!data || !Array.isArray(data.sports) || typeof data.age !== 'number') return
           //console.log(docSnap.id, 'sports:', data.sports, typeof data.sports);
 
           if (docSnap.id !== currentUserId && data.sports.some((sport) => userInterests.includes(sport))) {
-            //console.log('Included:', docSnap.id);
+           //console.log('Included:', docSnap.id);
             profiles.push({ id: docSnap.id, ...data })
             //} else {
             //console.log('Skipped:', docSnap.id);
@@ -94,31 +102,34 @@ const SwipeScreen: React.FC = () => {
     if (!card || !currentUserId) return
 
     if (direction === 'right') {
+      console.log('Swiping right:', { currentUserId, cardId: card.id })
+    try {
       await updateDoc(doc(db, 'users', currentUserId), {
         likedUsers: arrayUnion(card.id),
       })
-
-      if (card.image) {
-        await uploadFile(card.image, `uploads/${currentUserId}/${card.id}.jpg`)
-      }
-
-      const likedUserSnap = await getDoc(doc(db, 'users', card.id))
-      const likedUserData = likedUserSnap.data() as UserProfile | undefined
-
-      if (likedUserData?.likedUsers?.includes(currentUserId)) {
-        await setDoc(doc(collection(db, 'matches')), {
-          users: [currentUserId, card.id],
-          createdAt: new Date(),
-        });
-        Alert.alert('You got a new match!')
-      }
+      console.log('Update sent')
+    } catch (err) {
+      console.error('Error updating likedUsers:', err)
     }
+  }
+
+  const likedUserSnap = await getDoc(doc(db, 'users', card.id))
+  const likedUserData = likedUserSnap.data() as UserProfile | undefined
+
+  if (likedUserData?.likedUsers?.includes(currentUserId)) {
+    await setDoc(doc(collection(db, 'matches')), {
+      users: [currentUserId, card.id],
+      createdAt: new Date(),
+    })
+    Alert.alert('You got a new match!')
+  }
+
+    setCurrentIndex(prev => prev + 1)
     position.setValue({ x: 0, y: 0 })
-    setCurrentIndex((prev) => prev + 1)
   }
 
   const forceSwipe = (direction: 'right' | 'left') => {
-    const x = direction === 'right' ? SCREEN_WIDTH : -SCREEN_WIDTH
+    const x = direction === 'right' ? SCREEN_WIDTH + 100 : -SCREEN_WIDTH - 100
     Animated.timing(position, {
       toValue: { x, y: 0 },
       duration: SWIPE_OUT_DURATION,
@@ -149,47 +160,50 @@ const SwipeScreen: React.FC = () => {
 
   const renderCards = () => {
     if (currentIndex >= cards.length) {
-      return <Text style={styles.noMoreCards}>No more profiles</Text>
+      return (
+        <View style={styles.noMoreContainer}>
+          <Text style={styles.noMoreCards}>No more profiles</Text>
+        </View>
+      )
     }
 
-    return cards
-      .map((card, index) => {
-        if (index < currentIndex) return null
+    return cards.map((card, index) => {
+      if (index < currentIndex) return null
 
-        const isCurrentCard = index === currentIndex
+      const isTop = index === currentIndex
+      const rotate = position.x.interpolate({
+        inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+        outputRange: ['-30deg', '0deg', '30deg'],
+      })
 
-        const cardStyle = isCurrentCard
-          ? {
-              ...position.getLayout(),
-              transform: [
-                {
-                  rotate: position.x.interpolate({
-                    inputRange: [-SCREEN_WIDTH * 1.5, 0, SCREEN_WIDTH * 1.5],
-                    outputRange: ['-30deg', '0deg', '30deg'],
-                  }),
-                },
-              ],
-            }
-          : {}
+      const animatedStyle: AnimatedType.WithAnimatedObject<ViewStyle> | undefined = isTop ? {
+        transform: [
+          { translateX: position.x },
+          { translateY: position.y },
+          { rotate },
+        ],
+      }
+      : undefined
 
         return (
           <Animated.View
-            key={card.id}
-            style={[styles.card, cardStyle, { zIndex: cards.length - index }]}
-            {...(isCurrentCard ? panResponder.panHandlers : {})}
+            key={`${card.id}-${currentIndex}`}
+            {...(isTop ? panResponder.panHandlers : {})}
+            style={[styles.card, animatedStyle, { zIndex: cards.length - index }]}
           >
             <Image
               source={{
-                 uri: card.image ?? `https://picsum.photos/seed/${card.id}/300`,
+                uri: card.image ?? `https://picsum.photos/seed/${card.id}/300`,
               }}
               style={styles.image}
             />
-            <Text style={styles.name}>{card.name}</Text>
-            <Text style={styles.sports}>{card.sports.join(', ')}</Text>
+            <View style={styles.infoContainer}>
+              <Text style={styles.nameAge}>{card.name}, {card.age}</Text>
+              <Text style={styles.sports}>{card.sports.join(', ')}</Text>
+            </View>
           </Animated.View>
         )
-      })
-      .reverse()
+    })
   }
 
   if (loading) {
@@ -205,43 +219,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f2f2f2',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   card: {
     position: 'absolute',
-    width: '90%',
-    flex: 0.7,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     borderRadius: 16,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    paddingTop: 24,
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 5,
+    overflow: 'hidden',
   },
   image: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    marginBottom: 16,
-  },
-  name: {
+    width: '100%',
+    height: '75%',
+},
+  nameAge: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 8,
-    color: '#222',
+    color: '#000000',
   },
   sports: {
     fontSize: 16,
     color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 16,
+    marginTop: 4,
+  },
+  noMoreContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   noMoreCards: {
     fontSize: 20,
     color: '#888',
+  },
+   infoContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    padding: 16,
+    backgroundColor: 'rgba(240, 240, 240, 0.7)',
   },
 })
