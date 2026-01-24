@@ -34,7 +34,3 @@ export {
   setDoc
 } from 'firebase/firestore'
 
-console.log(
-  "Firebase API Key:",
-  process.env.EXPO_PUBLIC_FIREBASE_API_KEY
-);

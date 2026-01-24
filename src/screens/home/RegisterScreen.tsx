@@ -8,11 +8,14 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const { register } = useAuth();
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
     const handleRegister = async () => {
         try {
             setError("");
             await register(name, email, password);
+            setSuccess("Registration successful!");
+            alert("Registration successful!");
         } catch (err: any) {
             setError(err.message);
         }
