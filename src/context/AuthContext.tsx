@@ -1,4 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, use } from 'react';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase/Config';
 import { User } from '../types/User';
 
 type AuthContextType = {
@@ -10,40 +13,51 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// authia antava komponentti
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+
     useEffect(() => {
-        const fetchUser = async () => {
-            const storedUser = null;
-            if (storedUser) {
-                setUser(storedUser);
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (!firebaseUser) {
+                setUser(null);
+                return;
             }
-        };
-        fetchUser();
+
+            const ref = doc(db, 'users', firebaseUser.uid);
+            const snap = await getDoc(ref);
+
+            if (snap.exists()) {
+                setUser(snap.data() as User);
+            } else {
+                setUser(null);
+            }
+        });
+        return unsubscribe;
     }, []);
+
     // Testi käyttäjän kirjautumine 
-    const login = (email: string, password: string) => {
-        const loggedInUser: User = {
-            id: '1',
-            name: 'John Doe',
-            email: email,
-            createdAt: new Date(),
-        };
-        setUser(loggedInUser);
-    }
+    const login = async (email: string, password: string) => {
+        await signInWithEmailAndPassword(auth, email, password);
+    };
+
     // Testi käytäjän rekisteröinti
-    const register = (name: string, email: string, password: string) => {
+    const register = async (name: string, email: string, password: string) => {
+        const credentials = await createUserWithEmailAndPassword(auth, email, password);
         const newUser: User = {
-            id: '2',
+            uid: credentials.user.uid,
             name: name,
             email: email,
             createdAt: new Date(),
         };
-        setUser(newUser);
-    }
-    const logout = () => {
+        await setDoc(doc(db, 'users', credentials.user.uid), newUser);
+    };
+
+    const logout = async () => {
+        await signOut(auth);
         setUser(null);
     }
+    
     return (
         <AuthContext.Provider 
         value={{ 
