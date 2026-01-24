@@ -1,37 +1,38 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { View, Text, StyleSheet, Image, ActivityIndicator, Alert, Animated, PanResponder, Dimensions } from 'react-native'
-import { db, auth, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setDoc, storage } from '../../firebase/Config'
+import { View, Text, StyleSheet, Image, ActivityIndicator, Alert, Animated, PanResponder, Dimensions, TextInput, TouchableOpacity, ScrollView } from 'react-native'
+import { db, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setDoc, auth } from '../../firebase/Config'
 import { UserProfile } from '../../types/userProfile'
+import type { ViewStyle } from 'react-native'
+import { onSnapshot, query, where } from 'firebase/firestore'
 
-import type { Animated as AnimatedType, ViewStyle } from 'react-native'
-
-interface SwipeCard extends UserProfile {
-  id: string
-}
+interface SwipeCard extends UserProfile { id: string }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH
 const SWIPE_OUT_DURATION = 250
-const CARD_HEIGHT = SCREEN_HEIGHT * 0.7
-const CARD_WIDTH = SCREEN_WIDTH * 0.9
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.82
+const CARD_WIDTH = SCREEN_WIDTH * 0.90
 
-const userInterests = ['Jalkapallo', 'Tennis']
+const availableSports = ['Jalkapallo', 'Tennis', 'Sulkapallo', 'Keilaus'] 
 
 const SwipeScreen: React.FC = () => {
   const [cards, setCards] = useState<SwipeCard[]>([])
+  const [allCards, setAllCards] = useState<SwipeCard[]>([])
   const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   //const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentUserId, setCurrentUserId] = useState('Testuser1')
+  const [currentUserId] = useState('Testuser1')
+  const [selectedSports, setSelectedSports] = useState<string[]>([])
+  const [minAge, setMinAge] = useState<number | null>(null)
+  const [maxAge, setMaxAge] = useState<number | null>(null)
 
-  const position = useRef(new Animated.ValueXY()).current
+  const positions = useRef<Animated.ValueXY[]>([])
+  const topCardIndex = useRef(0)
+  const cardsRef = useRef<SwipeCard[]>([])
+  const iconOpacity = useRef(new Animated.Value(1)).current
 
-  useEffect(() => {
-    position.setValue({ x: 0, y: 0 })
-  }, [currentIndex])
-
-  useEffect(() => {
+  /*useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
       setCurrentUserId(user.uid)
@@ -39,35 +40,87 @@ const SwipeScreen: React.FC = () => {
       setCurrentUserId(null)
       setLoading(false) 
     }
-  })
-  return () => unsubscribe()
-}, [])
+   })
+   return () => unsubscribe()
+  }, [])*/
+  
+  useEffect(() => {
+    cardsRef.current = cards
+  }, [cards])
 
   useEffect(() => {
-    if (!currentUserId) return
+    iconOpacity.setValue(1)
+  }, [currentIndex])
 
-    const fetchProfiles = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'users'))
-        const profiles: SwipeCard[] = []
+  useEffect(() => {
+    let initialized = false
 
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as UserProfile | undefined
-          if (!data || !Array.isArray(data.sports) || typeof data.age !== 'number') return
-          //console.log(docSnap.id, 'sports:', data.sports, typeof data.sports);
+    const q = query(
+      collection(db, 'matches'),
+      where('users', 'array-contains', currentUserId)
+    )
 
-          if (docSnap.id !== currentUserId && data.sports.some((sport) => userInterests.includes(sport))) {
-           //console.log('Included:', docSnap.id);
-            profiles.push({ id: docSnap.id, ...data })
-            //} else {
-            //console.log('Skipped:', docSnap.id);
-          }
-        })
+    const unsubscribe = onSnapshot(q, snapshot => {
+      if (!initialized) {
+        initialized = true
+        return
+      }
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const match = change.doc.data()
+          Alert.alert('You have a new match!')
+        }
+      })
+    })
+    return () => unsubscribe()
+  }, [currentUserId])
 
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gesture) => {
+        const pos = positions.current[topCardIndex.current]
+        const topCard = cardsRef.current[topCardIndex.current]
+        if (pos && topCard) {
+          pos.setValue({ x: gesture.dx, y: gesture.dy })
+        }
+      },
+      onPanResponderRelease: (_, gesture) => {
+        const topCard = cardsRef.current[topCardIndex.current]
+        if (!topCard) return
+        if (gesture.dx > SWIPE_THRESHOLD) forceSwipe('right')
+        else if (gesture.dx < -SWIPE_THRESHOLD) forceSwipe('left')
+        else {
+          const pos = positions.current[topCardIndex.current]
+          if (pos) Animated.spring(pos, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start()
+        }
+      },
+    })
+  ).current
+
+  useEffect(() => {
+  const fetchProfiles = async () => {
+    setLoading(true)
+    try {
+      const snapshot = await getDocs(collection(db, 'users'))
+      const profiles: SwipeCard[] = []
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data() as UserProfile | undefined
+        if (!data || !Array.isArray(data.sports) || docSnap.id === currentUserId) return
+        profiles.push({ id: docSnap.id, ...data })
+      })
+
+        setAllCards(profiles)
         setCards(profiles)
-      } catch (error) {
-        console.error('Firebase fetchProfiles failed:', error)
-        Alert.alert('Error loading profiles', 'Please try again later.')
+        positions.current = profiles.map(() => new Animated.ValueXY())
+        topCardIndex.current = 0
+        setCurrentIndex(0)
+      } catch (err) {
+        console.error(err)
+        Alert.alert('Error loading profiles')
       } finally {
         setLoading(false)
       }
@@ -75,103 +128,97 @@ const SwipeScreen: React.FC = () => {
     fetchProfiles()
   }, [currentUserId])
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        position.setValue({ x: gesture.dx, y: gesture.dy })
-      },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          forceSwipe('right')
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          forceSwipe('left')
-        } else {
-          Animated.spring(position, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
-          }).start()
-        }
-      },
+  useEffect(() => {
+    const filtered = allCards.filter(card => {
+      const matchesSport = selectedSports.length === 0 || card.sports.some(s => selectedSports.includes(s))
+      const matchesMinAge = minAge === null || card.age >= minAge
+      const matchesMaxAge = maxAge === null || card.age <= maxAge
+      return matchesSport && matchesMinAge && matchesMaxAge
     })
-  ).current
+    setCards(filtered)
+    positions.current = filtered.map(() => new Animated.ValueXY())
+    topCardIndex.current = 0
+    setCurrentIndex(0)
+  }, [selectedSports, minAge, maxAge, allCards])
 
   const forceSwipe = (direction: 'right' | 'left') => {
+    const idx = topCardIndex.current
+    const pos = positions.current[idx]
+    const topCard = cardsRef.current[idx]
+    if (!pos || !topCard) return
+
   const x = direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5
-  const y = 0;
-  
-  Animated.timing(position, {
-      toValue: { x, y },
-      duration: SWIPE_OUT_DURATION,
+  Animated.timing(pos, {
+    toValue: { x, y: 0 },
+    duration: SWIPE_OUT_DURATION,
+    useNativeDriver: false,
+  }).start(() => {
+    Animated.timing(iconOpacity, {
+      toValue: 0,
+      duration: 150,
+      delay: 50,
       useNativeDriver: false,
-    }).start(() => onSwipeComplete(direction))
-  }
+    }).start()
+    topCardIndex.current += 1
+    setCurrentIndex(topCardIndex.current)
+    onSwipeComplete(direction, idx)
+  })
+}
 
-  const onSwipeComplete = async (direction: 'right' | 'left') => {
-    const card = cards[currentIndex]
-    if (!card || !currentUserId) return
+const onSwipeComplete = async (direction: 'right' | 'left', idx: number) => {
+  const card = cardsRef.current[idx]
+  if (!card) return
 
-    if (direction === 'right') {
-      console.log('Swiping right:', { currentUserId, cardId: card.id })
+  if (direction === 'right') {
     try {
-      await updateDoc(doc(db, 'users', currentUserId), {
-        likedUsers: arrayUnion(card.id),
-      })
-      console.log('Update sent')
-
-    const likedUserSnap = await getDoc(doc(db, 'users', card.id))
-    const likedUserData = likedUserSnap.data() as UserProfile | undefined
-
-    if (likedUserData?.likedUsers?.includes(currentUserId)) {
-      await setDoc(doc(collection(db, 'matches')), {
-        users: [currentUserId, card.id],
-        createdAt: new Date(),
-      })
+      await updateDoc(doc(db, 'users', currentUserId), { likedUsers: arrayUnion(card.id) })
+      const likedUserSnap = await getDoc(doc(db, 'users', card.id))
+      const likedUserData = likedUserSnap.data() as UserProfile | undefined
+      if (likedUserData?.likedUsers?.includes(currentUserId)) {
+        await setDoc(doc(collection(db, 'matches')), { users: [currentUserId, card.id]})
         Alert.alert('You got a new match!')
       }
-    } catch (err) {
-      console.error('Error updating likedUsers or matches:', err)
-    }
+    } catch (err) { console.error(err) }
   }
-      setCurrentIndex(prev => prev + 1)
-      position.setValue({ x: 0, y: 0 })
-    }
+}
 
-    const renderCards = () => {
-      if (currentIndex >= cards.length) {
-        return (
-          <View style={styles.noMoreContainer}>
-            <Text style={styles.noMoreCards}>No more profiles</Text>
-          </View>
-        )
-      }
+  const renderCards = () => { 
+  if (cards.length === 0) return <Text>No profiles found</Text>
 
-      return cards
+  return cards
     .map((card, index) => {
-      if (index < currentIndex) return null;
+      if (index < currentIndex) return null 
 
-      const isTop = index === currentIndex;
+      const pos = positions.current[index]
+      if (!pos) return null
 
-      const rotate = position.x.interpolate({
-        inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-        outputRange: ['-30deg', '0deg', '30deg'],
-      });
-
-      const animatedStyle: Animated.WithAnimatedObject<ViewStyle> = isTop
-        ? {
-            transform: [
-              { translateX: position.x },
-              { translateY: position.y },
-              { rotate },
+      const isTop = index === currentIndex
+      const animatedStyle = {
+        transform: isTop
+          ? [
+              { translateX: pos.x },
+              { translateY: pos.y },
+              {
+                rotate: pos.x.interpolate({
+                  inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+                  outputRange: ['-30deg', '0deg', '30deg'],
+                }),
+              },
+            ]
+          : [
+              { scale: 0.95 - (index - currentIndex) * 0.02 },
+              { translateY: (index - currentIndex) * 10 },
             ],
-          }
-        : {};
+        opacity: isTop ? 1 : 0.8,
+        zIndex: 100 - index,
+      } as Animated.WithAnimatedObject<ViewStyle>
 
       return (
         <Animated.View
-          key={card.id} // stable key
+          key={card.id}
+          style={[styles.card, animatedStyle]}
+          pointerEvents={isTop ? 'auto' : 'none'}
           {...(isTop ? panResponder.panHandlers : {})}
-          style={[styles.card, animatedStyle, { zIndex: cards.length - index }]}
         >
           <Image
             source={{ uri: card.image ?? `https://picsum.photos/seed/${card.id}/300` }}
@@ -184,14 +231,114 @@ const SwipeScreen: React.FC = () => {
         </Animated.View>
       )
     })
-    .reverse() 
-}
-
-  if (loading) {
-    return <ActivityIndicator size='large' style={{ flex: 1 }} />
+    .reverse()
   }
 
-  return <View style={styles.container}>{renderCards()}</View>
+  if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />
+
+  const swipeX = positions.current[currentIndex]?.x
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsContainer}>
+          {availableSports.map(sport => (
+            <TouchableOpacity
+              key={sport}
+              style={[styles.chip, selectedSports.includes(sport) && styles.selectedChip]}
+              onPress={() => {
+                if (selectedSports.includes(sport)) {
+                  setSelectedSports(selectedSports.filter(s => s !== sport))
+                } else {
+                  setSelectedSports([...selectedSports, sport])
+                }
+              }}
+            >
+              <Text style={styles.chipText}>{sport}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <View style={styles.ageContainer}>
+          <TextInput
+            placeholder="Min Age"
+            keyboardType="numeric"
+            style={styles.ageInput}
+            value={minAge?.toString() ?? ''}
+            onChangeText={text => setMinAge(text ? parseInt(text) : null)}
+          />
+          <TextInput
+            placeholder="Max Age"
+            keyboardType="numeric"
+            style={styles.ageInput}
+            value={maxAge?.toString() ?? ''}
+            onChangeText={text => setMaxAge(text ? parseInt(text) : null)}
+          />
+        </View>
+        {cards.length === 0 && (
+          <TouchableOpacity style={styles.resetButton} onPress={() => {
+            setMinAge(null)
+            setMaxAge(null)
+            setSelectedSports([])
+          }}>
+            <Text style={styles.resetText}>Reset filters</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={styles.cardsContainer}>
+        {cards.length === 0 ? (
+          <View style={styles.noMoreContainer}>
+            <Text style={styles.noMoreCards}>No profiles match current filters</Text>
+          </View>
+        ) : currentIndex >= cards.length ? (
+          <View style={styles.noMoreContainer}>
+            <Text style={styles.noMoreCards}>No more profiles</Text>
+          </View>
+        ) : (
+          renderCards()
+        )}
+      </View>
+
+      {swipeX && (
+        <>
+          <Animated.Text
+            style={[
+              styles.leftIcon,
+              {
+                opacity: Animated.multiply(
+                  iconOpacity,
+                  swipeX.interpolate({
+                    inputRange: [-SCREEN_WIDTH * 0.5, -SWIPE_THRESHOLD, 0],
+                    outputRange: [1, 0.6, 0],
+                    extrapolate: 'clamp',
+                  })
+                ),
+              },
+            ]}
+          >
+            ❌
+          </Animated.Text>
+
+          <Animated.Text
+            style={[
+              styles.rightIcon,
+              {
+                opacity: Animated.multiply(
+                  iconOpacity,
+                  swipeX.interpolate({
+                    inputRange: [0, SWIPE_THRESHOLD, SCREEN_WIDTH * 0.5],
+                    outputRange: [0, 0.6, 1],
+                    extrapolate: 'clamp',
+                  })
+                )
+              }
+            ]}
+          >
+            ❤️
+          </Animated.Text>
+        </>
+      )}
+    </View>
+  )
 }
 
 export default SwipeScreen
@@ -200,6 +347,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f2f2f2',
+  },
+  filterContainer: {
+    padding: 8,
+    backgroundColor: '#fff',
+    elevation: 2,
+  },
+  cardsContainer: { 
+    flex: 1, 
+    marginTop: 15, 
+    zIndex: 0, 
+    pointerEvents: 'box-none', 
   },
   card: {
     position: 'absolute',
@@ -218,7 +376,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '75%',
-},
+  },
   nameAge: {
     fontSize: 24,
     fontWeight: '700',
@@ -229,6 +387,58 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  leftIcon: {
+    position: 'absolute',
+    top: '45%',
+    left: 8,
+    fontSize: 40,
+    zIndex: 2000,
+  },
+  rightIcon: {
+    position: 'absolute',
+    top: '45%',
+    right: 8,
+    fontSize: 40,
+    zIndex: 2000,
+  },
+  chipsContainer: {
+    marginBottom: 8,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#ddd', 
+    borderRadius: 20, 
+    marginRight: 8, 
+  },
+  selectedChip: { 
+    backgroundColor: '#ff1a75', 
+  },
+  chipText: { 
+    color: '#000', 
+  },
+  ageContainer: { 
+    flexDirection: 'row', 
+    gap: 8, 
+  },
+  ageInput: { 
+    flex: 1, 
+    backgroundColor: '#eee', 
+    borderRadius: 8, 
+    padding: 8, 
+    fontSize: 16, 
+  },
+  resetButton: { 
+    marginTop:8, 
+    padding:8, 
+    backgroundColor:'#ff1a75', 
+    borderRadius:8, 
+    alignItems:'center', 
+  },
+  resetText: { 
+    color:'#fff', 
+    fontWeight:'700', 
+  },
   noMoreContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -238,7 +448,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#888',
   },
-   infoContainer: {
+  infoContainer: {
     position: 'absolute',
     bottom: 0,
     width: '100%',
