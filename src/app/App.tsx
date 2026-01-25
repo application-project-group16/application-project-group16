@@ -11,7 +11,7 @@ const Stack = createStackNavigator();
 
 function SportPlacesStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator id="SportPlacesStack">
       <Stack.Screen
         name="SportPlacesSelect"
         component={SportPlacesScreen}
@@ -35,7 +35,7 @@ function SportPlacesStack() {
 export default function App() {
   return (
     <NavigationContainer>
-      <Tab.Navigator>
+      <Tab.Navigator id="MainTab">
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen 
           name="SportPlaces" 
