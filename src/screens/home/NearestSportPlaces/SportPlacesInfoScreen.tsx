@@ -14,11 +14,15 @@ const TYPE_CONFIG = {
     label: "gyms"
   },
   swimming_pools: {
-    query: `node["leisure"="swimming_pool"];`,
+    query: `
+      node["leisure"="swimming_pool"];
+      node["sport"="swimming"];`,
     label: "swimming pools"
   },
   climbing_gyms: {
-    query: `node["sport"="climbing"];`,
+    query: `
+      node["leisure"="sports_centre"];
+      node["sport"="climbing"];`,
     label: "climbing gyms"
   }
 };
