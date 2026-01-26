@@ -78,31 +78,41 @@ const SwipeScreen: React.FC = () => {
     return () => unsubscribe()
   }, [currentUserId])
 
+  const canSwipe =
+    cards.length > 0 &&
+    currentIndex < cards.length &&
+    positions.current[currentIndex]
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gesture) => {
-        const pos = positions.current[topCardIndex.current]
-        const topCard = cardsRef.current[topCardIndex.current]
-        if (pos && topCard) {
-          pos.setValue({ x: gesture.dx, y: gesture.dy })
-        }
+        const idx = topCardIndex.current
+        const pos = positions.current[idx]
+        const topCard = cardsRef.current[idx]
+
+        if (!pos || !topCard) return
+        pos.setValue({ x: gesture.dx, y: gesture.dy })
       },
       onPanResponderRelease: (_, gesture) => {
-        const topCard = cardsRef.current[topCardIndex.current]
-        if (!topCard) return
+        const idx = topCardIndex.current
+        const pos = positions.current[idx]
+        const topCard = cardsRef.current[idx]
+
+        if (!pos || !topCard) return
         if (gesture.dx > SWIPE_THRESHOLD) forceSwipe('right')
         else if (gesture.dx < -SWIPE_THRESHOLD) forceSwipe('left')
         else {
-          const pos = positions.current[topCardIndex.current]
-          if (pos) Animated.spring(pos, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start()
+          Animated.spring(pos, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: false,
+          }).start()
         }
       },
     })
   ).current
-
+  
   useEffect(() => {
   const fetchProfiles = async () => {
     setLoading(true)
@@ -216,7 +226,7 @@ const onSwipeComplete = async (direction: 'right' | 'left', idx: number) => {
           key={card.id}
           style={[styles.card, animatedStyle]}
           pointerEvents={isTop ? 'auto' : 'none'}
-          {...(isTop ? panResponder.panHandlers : {})}
+          {...(isTop && canSwipe ? panResponder.panHandlers : {})}
         >
           <Image
             source={{ uri: card.image ?? `https://picsum.photos/seed/${card.id}/300` }}
@@ -242,7 +252,9 @@ const onSwipeComplete = async (direction: 'right' | 'left', idx: number) => {
     )
   }
 
-  const swipeX = positions.current[currentIndex]?.x
+  const swipeX =
+    positions.current[currentIndex] &&
+    positions.current[currentIndex].x
 
   return (
     <View style={styles.container}>
