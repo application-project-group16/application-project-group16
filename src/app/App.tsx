@@ -5,8 +5,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/home/HomeScreen';
 import SportPlacesScreen from '../screens/home/NearestSportPlaces/SportPlacesScreen';
 import SportPlacesInfoScreen from '../screens/home/NearestSportPlaces/SportPlacesInfoScreen';
+import SwipeScreen from '../screens/swipe/SwipeScreen';
+import type { MainTabParamList } from '../types/navigation'
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
 
 function SportPlacesStack() {
@@ -37,6 +39,7 @@ export default function App() {
     <NavigationContainer>
       <Tab.Navigator id="MainTab">
         <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Swipe" component={SwipeScreen} />
         <Tab.Screen 
           name="SportPlaces" 
           component={SportPlacesStack} 
