@@ -11,7 +11,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH
 const SWIPE_OUT_DURATION = 250
-const CARD_HEIGHT = SCREEN_HEIGHT * 0.82
+const CARD_HEIGHT = SCREEN_HEIGHT * 0.70
 const CARD_WIDTH = SCREEN_WIDTH * 0.90
 
 const availableSports = ['Jalkapallo', 'Tennis', 'Sulkapallo', 'Keilaus'] 
