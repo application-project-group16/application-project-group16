@@ -7,7 +7,9 @@ import SportPlacesScreen from '../screens/home/NearestSportPlaces/SportPlacesScr
 import SportPlacesInfoScreen from '../screens/home/NearestSportPlaces/SportPlacesInfoScreen';
 import SwipeScreen from '../screens/swipe/SwipeScreen';
 import type { MainTabParamList } from '../types/navigation'
-import { AuthProvider } from '../context/AuthContext'
+import LoginScreen from '../screens/home/LoginScreen';
+import RegisterScreen from '../screens/home/RegisterScreen';
+import { AuthProvider } from '../context/AuthContext';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
@@ -40,6 +42,8 @@ export default function App() {
     <AuthProvider>
       <NavigationContainer>
         <Tab.Navigator id="MainTab">
+          <Tab.Screen name="Login" component={LoginScreen} />
+          <Tab.Screen name="Register" component={RegisterScreen} />
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Swipe" component={SwipeScreen} />
           <Tab.Screen 
