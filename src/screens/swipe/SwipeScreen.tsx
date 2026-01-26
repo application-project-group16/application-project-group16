@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { View, Text, StyleSheet, Image, ActivityIndicator, Alert, Animated, PanResponder, Dimensions, TextInput, TouchableOpacity, ScrollView } from 'react-native'
-import { db, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setDoc, auth } from '../../firebase/Config'
+import { db, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setDoc } from '../../firebase/Config'
 import { UserProfile } from '../../types/userProfile'
 import type { ViewStyle } from 'react-native'
 import { onSnapshot, query, where } from 'firebase/firestore'
+import { useAuth } from '../../context/AuthContext'
 
 interface SwipeCard extends UserProfile { id: string }
 
@@ -14,15 +15,29 @@ const SWIPE_OUT_DURATION = 250
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.70
 const CARD_WIDTH = SCREEN_WIDTH * 0.90
 
-const availableSports = ['Jalkapallo', 'Tennis', 'Sulkapallo', 'Keilaus'] 
+const availableSports = [
+  'Football', 
+  'Tennis', 
+  'Badminton', 
+  'Bowling', 
+  'Running', 
+  'Cycling', 
+  'Gym', 
+  'Swimming', 
+  'Basketball', 
+  'Yoga', 
+  'CrossFit', 
+  'Climbing'
+] 
 
 const SwipeScreen: React.FC = () => {
+  const { user } = useAuth()
+  const currentUserId = user?.uid ?? null
+
   const [cards, setCards] = useState<SwipeCard[]>([])
   const [allCards, setAllCards] = useState<SwipeCard[]>([])
   const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
-  //const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentUserId] = useState('Testuser1')
   const [selectedSports, setSelectedSports] = useState<string[]>([])
   const [minAge, setMinAge] = useState<number | null>(null)
   const [maxAge, setMaxAge] = useState<number | null>(null)
@@ -31,18 +46,6 @@ const SwipeScreen: React.FC = () => {
   const topCardIndex = useRef(0)
   const cardsRef = useRef<SwipeCard[]>([])
   const iconOpacity = useRef(new Animated.Value(1)).current
-
-  /*useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-      setCurrentUserId(user.uid)
-    } else {
-      setCurrentUserId(null)
-      setLoading(false) 
-    }
-   })
-   return () => unsubscribe()
-  }, [])*/
   
   useEffect(() => {
     cardsRef.current = cards
@@ -53,8 +56,9 @@ const SwipeScreen: React.FC = () => {
   }, [currentIndex])
 
   useEffect(() => {
-    let initialized = false
+    if (!currentUserId) return
 
+    let initialized = false
     const q = query(
       collection(db, 'matches'),
       where('users', 'array-contains', currentUserId)
@@ -67,7 +71,6 @@ const SwipeScreen: React.FC = () => {
       }
       snapshot.docChanges().forEach(change => {
         if (change.type === 'added') {
-          const match = change.doc.data()
           Alert.alert('You have a new match!')
         }
       })
@@ -148,17 +151,12 @@ const SwipeScreen: React.FC = () => {
     if (!pos || !topCard) return
 
   const x = direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5
+
   Animated.timing(pos, {
     toValue: { x, y: 0 },
     duration: SWIPE_OUT_DURATION,
     useNativeDriver: false,
   }).start(() => {
-    Animated.timing(iconOpacity, {
-      toValue: 0,
-      duration: 150,
-      delay: 50,
-      useNativeDriver: false,
-    }).start()
     topCardIndex.current += 1
     setCurrentIndex(topCardIndex.current)
     onSwipeComplete(direction, idx)
@@ -235,6 +233,14 @@ const onSwipeComplete = async (direction: 'right' | 'left', idx: number) => {
   }
 
   if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />
+
+  if (!currentUserId) {
+    return (
+      <View style={styles.center}>
+        <Text>Please log in to use Swipe</Text>
+      </View>
+    )
+  }
 
   const swipeX = positions.current[currentIndex]?.x
 
@@ -454,5 +460,10 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 16,
     backgroundColor: 'rgba(240, 240, 240, 0.7)',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })

@@ -7,6 +7,7 @@ import SportPlacesScreen from '../screens/home/NearestSportPlaces/SportPlacesScr
 import SportPlacesInfoScreen from '../screens/home/NearestSportPlaces/SportPlacesInfoScreen';
 import SwipeScreen from '../screens/swipe/SwipeScreen';
 import type { MainTabParamList } from '../types/navigation'
+import { AuthProvider } from '../context/AuthContext'
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
@@ -36,15 +37,17 @@ function SportPlacesStack() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator id="MainTab">
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Swipe" component={SwipeScreen} />
-        <Tab.Screen 
-          name="SportPlaces" 
-          component={SportPlacesStack} 
-          options={{ headerShown: false }}/>
-      </Tab.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Tab.Navigator id="MainTab">
+          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="Swipe" component={SwipeScreen} />
+          <Tab.Screen 
+            name="SportPlaces" 
+            component={SportPlacesStack} 
+            options={{ headerShown: false }}/>
+        </Tab.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
