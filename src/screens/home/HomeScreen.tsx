@@ -6,14 +6,13 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text>Let's start working on this</Text>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+})

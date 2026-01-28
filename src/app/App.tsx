@@ -5,13 +5,18 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/home/HomeScreen';
 import SportPlacesScreen from '../screens/home/NearestSportPlaces/SportPlacesScreen';
 import SportPlacesInfoScreen from '../screens/home/NearestSportPlaces/SportPlacesInfoScreen';
+import SwipeScreen from '../screens/swipe/SwipeScreen';
+import type { MainTabParamList } from '../types/navigation'
+import LoginScreen from '../screens/home/LoginScreen';
+import RegisterScreen from '../screens/home/RegisterScreen';
+import { AuthProvider } from '../context/AuthContext';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
 
 function SportPlacesStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator id="SportPlacesStack">
       <Stack.Screen
         name="SportPlacesSelect"
         component={SportPlacesScreen}
@@ -34,14 +39,19 @@ function SportPlacesStack() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen 
-          name="SportPlaces" 
-          component={SportPlacesStack} 
-          options={{ headerShown: false }}/>
-      </Tab.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Tab.Navigator id="MainTab">
+          <Tab.Screen name="Login" component={LoginScreen} />
+          <Tab.Screen name="Register" component={RegisterScreen} />
+          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="Swipe" component={SwipeScreen} />
+          <Tab.Screen 
+            name="SportPlaces" 
+            component={SportPlacesStack} 
+            options={{ headerShown: false }}/>
+        </Tab.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
