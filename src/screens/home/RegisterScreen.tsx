@@ -36,7 +36,6 @@ export default function RegisterScreen() {
                 return;
             }
             await register(name, email, password,);
-            alert("Registration successful!");
             setModalVisible(true);
         } catch (err: any) {
             setError(err.message);
