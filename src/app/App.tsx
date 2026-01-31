@@ -2,14 +2,14 @@ import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import SportPlacesScreen from '../screens/home/NearestSportPlaces/SportPlacesScreen';
-import SportPlacesInfoScreen from '../screens/home/NearestSportPlaces/SportPlacesInfoScreen';
+import SportPlacesViewModel from '../screens/NearestSportPlaces/SportPlaces/SportPlacesViewModel';
+import SportPlacesInfoViewModel from '../screens/NearestSportPlaces/SportPlacesInfo/SportPlacesInfoViewModel';
 import SwipeScreen from '../screens/swipe/SwipeScreen';
-import type { MainTabParamList } from '../types/navigation'
-import LoginScreen from '../screens/home/LoginScreen';
-import RegisterScreen from '../screens/home/RegisterScreen';
+import type { MainTabParamList } from '../Models/navigation'
+import LoginScreen from '../screens/login/LoginScreen';
+import RegisterScreen from '../screens/login/RegisterScreen';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import SettingsScreen from '../screens/settings/SettingsScreen';
+import SettingsViewModel from '../screens/settings/SettingsViewModel';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
@@ -19,7 +19,7 @@ function SportPlacesStack() {
     <Stack.Navigator id="SportPlacesStack">
       <Stack.Screen
         name="SportPlacesSelect"
-        component={SportPlacesScreen}
+        component={SportPlacesViewModel}
         options={{
           headerShown: true,
           title: "Select Sport Places", 
@@ -27,7 +27,7 @@ function SportPlacesStack() {
       />
       <Stack.Screen
         name="SportPlacesInfo"
-        component={SportPlacesInfoScreen}
+        component={SportPlacesInfoViewModel}
         options={{
           headerShown: true,
           title: "Sport Places Info", 
@@ -37,15 +37,13 @@ function SportPlacesStack() {
   );
 }
 
-// Wrapper to access auth context inside navigation
 function RootNavigator() {
   const { user } = useAuth();
 
   if (!user) {
-    // Only show login screen before authentication
     return (
       <NavigationContainer>
-        <Stack.Navigator>
+        <Stack.Navigator id="AuthStack">
           <Stack.Screen
             name="Login"
             component={LoginScreen}
@@ -61,7 +59,6 @@ function RootNavigator() {
     );
   }
 
-  // Show tab navigator after login
   return (
     <NavigationContainer>
       <Tab.Navigator id="MainTab">
@@ -70,7 +67,7 @@ function RootNavigator() {
           name="SportPlaces" 
           component={SportPlacesStack} 
           options={{ headerShown: false }}/>
-        <Tab.Screen name="Settings" component={SettingsScreen} />
+        <Tab.Screen name="Settings" component={SettingsViewModel} />
       </Tab.Navigator>
     </NavigationContainer>
   );
