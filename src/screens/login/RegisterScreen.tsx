@@ -4,11 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { doc, updateDoc } from '../../firebase/Config';
 import { db } from '../../firebase/Config';
+import { AVAILABLE_SPORTS } from '../../Models/User'
 
-const availableSports = [
-  'Football', 'Tennis', 'Badminton', 'Bowling', 'Running', 
-  'Cycling', 'Gym', 'Swimming', 'Basketball', 'Yoga', 'CrossFit', 'Climbing'
-];
+const availableSports = AVAILABLE_SPORTS;
 
 export default function RegisterScreen() {
   const navigation = useNavigation<any>();
@@ -36,7 +34,6 @@ export default function RegisterScreen() {
                 return;
             }
             await register(name, email, password,);
-            alert("Registration successful!");
             setModalVisible(true);
         } catch (err: any) {
             setError(err.message);

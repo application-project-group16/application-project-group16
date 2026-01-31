@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { View, Text, StyleSheet, Image, ActivityIndicator, Alert, Animated, PanResponder, Dimensions, TextInput, TouchableOpacity, ScrollView } from 'react-native'
 import { db, collection, getDocs, updateDoc, doc, arrayUnion, getDoc, setDoc } from '../../firebase/Config'
-import { UserProfile } from '../../types/userProfile'
+import { UserProfile, AVAILABLE_SPORTS } from '../../Models/User'
 import type { ViewStyle } from 'react-native'
 import { onSnapshot, query, where } from 'firebase/firestore'
 import { useAuth } from '../../context/AuthContext'
+
+const availableSports = AVAILABLE_SPORTS;
 
 interface SwipeCard extends UserProfile { id: string }
 
@@ -14,21 +16,6 @@ const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH
 const SWIPE_OUT_DURATION = 250
 const CARD_HEIGHT = SCREEN_HEIGHT * 0.70
 const CARD_WIDTH = SCREEN_WIDTH * 0.90
-
-const availableSports = [
-  'Football', 
-  'Tennis', 
-  'Badminton', 
-  'Bowling', 
-  'Running', 
-  'Cycling', 
-  'Gym', 
-  'Swimming', 
-  'Basketball', 
-  'Yoga', 
-  'CrossFit', 
-  'Climbing'
-] 
 
 const SwipeScreen: React.FC = () => {
   const { user } = useAuth()

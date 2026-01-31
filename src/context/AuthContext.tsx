@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, useEffect, use } from 'reac
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/Config';
-import { User } from '../types/User';
+import { User } from '../Models/User';
 
 type AuthContextType = {
     user: User | null;
