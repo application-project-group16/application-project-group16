@@ -1,4 +1,6 @@
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { gradients } from '../../Models/Gradient';
 
 interface LoginViewProps {
   email: string;
@@ -18,85 +20,157 @@ export default function LoginView({
   onNavigateToRegister,
 }: LoginViewProps) {
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={gradients.authBackground} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Login to your account</Text>
+        <View style={styles.card}>
+          <Text style={styles.logo}>🏋️ FitMatch</Text>
+          
+          <View style={styles.tabContainer}>
+            <LinearGradient
+              colors={gradients.authBackground}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.loginTab}
+            >
+              <TouchableOpacity>
+              <Text style={styles.activeTabText}>Login</Text>
+              </TouchableOpacity>
+            </LinearGradient>
 
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={onEmailChange}
-          keyboardType="email-address"
-          placeholderTextColor="#999"
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={onPasswordChange}
-          secureTextEntry
-          placeholderTextColor="#999"
-          style={styles.input}
-        />
-        <TouchableOpacity 
-          style={styles.loginButton} 
-          onPress={onLogin}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.signUpTab}>
+              <Text style={styles.inactiveTabText} onPress={onNavigateToRegister}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity onPress={onNavigateToRegister}>
-          <Text style={styles.registerLink}>Don't have an account? Register here</Text>
-        </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>✉️</Text>
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={onEmailChange}
+              keyboardType="email-address"
+              placeholderTextColor="#ccc"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>🔒</Text>
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={onPasswordChange}
+              secureTextEntry
+              placeholderTextColor="#ccc"
+              style={styles.input}
+            />
+          </View>
+          <LinearGradient
+            colors={['#FF6B35', '#FF1744']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.loginButton}
+          ><Text style={styles.loginButtonText} onPress={onLogin}>Login</Text></LinearGradient>
+        </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#d15f13',
+    backgroundColor: '#FF5A4A',
   },
   scrollContent: {
-    padding: 20,
-    justifyContent: 'center',
     flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  input: {
-    height: 50,
-    borderColor: '#000',
-    borderWidth: 2,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+  card: {
     backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  loginButton: {
-    backgroundColor: '#000',
-    paddingVertical: 15,
+  logo: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FF6B35',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    gap: 12,
+  },
+  loginTab: {
+    flex: 1,
+    backgroundColor: '#FF6B35',
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 15,
   },
-  buttonText: {
-    color: '#5eff00',
-    fontSize: 18,
-    fontWeight: 'bold',
+  signUpTab: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  registerLink: {
-    color: '#5eff00',
-    textAlign: 'center',
+  activeTabText: {
+    color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  inactiveTabText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    backgroundColor: '#fafafa',
+  },
+  inputIcon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#333',
+  },
+  loginButton: {
+    backgroundColor: '#FF6B35',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  signUpLink: {
+    color: '#666',
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
