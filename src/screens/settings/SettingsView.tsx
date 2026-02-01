@@ -20,6 +20,7 @@ interface SettingsViewProps {
   onPickFromCamera: () => void;
   onPickFromGallery: () => void;
   onSave: () => void;
+  onLogout: () => void;
 }
 
 export default function SettingsView({
@@ -38,6 +39,7 @@ export default function SettingsView({
   onPickFromCamera,
   onPickFromGallery,
   onSave,
+  onLogout,
 }: SettingsViewProps) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -109,7 +111,10 @@ export default function SettingsView({
       <TouchableOpacity style={styles.saveButton} onPress={onSave}>
         <Text style={styles.saveButtonText}>Save Changes</Text>
       </TouchableOpacity>
-
+      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
+      
       <Modal
         visible={showImageOptions}
         transparent
@@ -243,6 +248,19 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   saveButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  logoutButton: {
+    backgroundColor: '#d32f2f',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  logoutButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,

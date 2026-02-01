@@ -6,8 +6,8 @@ import SportPlacesViewModel from '../screens/NearestSportPlaces/SportPlaces/Spor
 import SportPlacesInfoViewModel from '../screens/NearestSportPlaces/SportPlacesInfo/SportPlacesInfoViewModel';
 import SwipeScreen from '../screens/swipe/SwipeScreen';
 import type { MainTabParamList } from '../Models/navigation'
-import LoginScreen from '../screens/login/LoginScreen';
-import RegisterScreen from '../screens/login/RegisterScreen';
+import LoginViewModel from '../screens/login/LoginViewModel';
+import RegisterViewModel from '../screens/login/RegisterViewModel';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import SettingsViewModel from '../screens/settings/SettingsViewModel';
 
@@ -46,12 +46,12 @@ function RootNavigator() {
         <Stack.Navigator id="AuthStack">
           <Stack.Screen
             name="Login"
-            component={LoginScreen}
+            component={LoginViewModel}
             options={{ headerShown: false }}
           />
           <Stack.Screen
             name="Register"
-            component={RegisterScreen}
+            component={RegisterViewModel}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

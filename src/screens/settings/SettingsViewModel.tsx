@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import SettingsView from './SettingsView';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SettingsViewModel() {
+  const { logout } = useAuth();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [bio, setBio] = useState('');
@@ -57,6 +59,27 @@ export default function SettingsViewModel() {
     Alert.alert('Saved!', `Name: ${name}\nAge: ${age}\nBio: ${bio}\nSports: ${selectedSports.join(', ')}`);
   };
 
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', onPress: () => {} },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout');
+            }
+          },
+          style: 'destructive',
+        },
+      ]
+    );
+  };
+
   return (
     <SettingsView
       name={name}
@@ -74,6 +97,7 @@ export default function SettingsViewModel() {
       onPickFromCamera={pickFromCamera}
       onPickFromGallery={pickFromGallery}
       onSave={handleSave}
+      onLogout={handleLogout}
     />
   );
 }

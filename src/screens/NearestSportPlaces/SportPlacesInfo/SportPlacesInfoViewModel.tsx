@@ -1,39 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import { BarChart } from "react-native-chart-kit";
+import { Alert } from "react-native";
 import * as Location from 'expo-location';
 import { useRoute } from "@react-navigation/native";
+import SportPlacesInfoView from "./SportPlacesInfoView";
+import { TYPE_CONFIG, Gym } from "../../../Models/SportPlaces";
 
-const TYPE_CONFIG = {
-  gyms: {
-    query: `
-      node["leisure"="fitness_centre"];
-      node["amenity"="gym"];
-    `,
-    label: "gyms"
-  },
-  swimming_pools: {
-    query: `
-      node["leisure"="swimming_pool"];
-      node["sport"="swimming"];`,
-    label: "swimming pools"
-  },
-  climbing_gyms: {
-    query: `
-      node["leisure"="sports_centre"];
-      node["sport"="climbing"];`,
-    label: "climbing gyms"
-  }
-};
-
-type Gym = {
-  id: number;
-  name: string;
-  lat: number;
-  lon: number;
-  distance: number; 
-};
 
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3; 
@@ -50,8 +21,7 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * c;
 }
 
-// FIX: Rename the component to match the file and navigation
-export default function SportPlacesInfoScreen() {
+export default function SportPlacesInfoViewModel() {
   const route = useRoute();
   const { type } = route.params as { type: keyof typeof TYPE_CONFIG };
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
@@ -85,7 +55,6 @@ export default function SportPlacesInfoScreen() {
         setLoading(false);
         return;
       }
-      // Insert the around filter for Overpass query
       const query = `
 [out:json];
 (
@@ -116,61 +85,12 @@ out body;
     fetchPlaces();
   }, [userLocation, type]);
 
-  if (loading || !userLocation) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={{ flex: 1 }}>
-      <MapView
-        style={{ flex: 2 }}
-        initialRegion={{
-          latitude: userLocation.lat,
-          longitude: userLocation.lon,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
-        showsUserLocation
-      >
-        {places.map((place) => (
-          <Marker
-            key={place.id}
-            coordinate={{ latitude: place.lat, longitude: place.lon }}
-            title={place.name}
-            description={`Distance: ${place.distance.toFixed(0)} m`}
-          />
-        ))}
-      </MapView>
-      <Text style={styles.header}>Top nearest {TYPE_CONFIG[type]?.label}</Text>
-      <BarChart
-        data={{
-          labels: places.slice(0, 5).map((g) => g.name.length > 10 ? g.name.slice(0, 10) + "…" : g.name),
-          datasets: [{ data: places.slice(0, 5).map((g) => Math.round(g.distance)) }],
-        }}
-        width={Dimensions.get("window").width - 16}
-        height={220}
-        yAxisLabel="" 
-        yAxisSuffix="m"
-        chartConfig={{
-          backgroundColor: "#fff",
-          backgroundGradientFrom: "#fff",
-          backgroundGradientTo: "#fff",
-          decimalPlaces: 0,
-          color: (opacity = 1) => `rgba(34, 128, 176, ${opacity})`,
-          labelColor: () => "#222",
-        }}
-        style={{ margin: 8, borderRadius: 8 }}
-      />
-    </View>
+    <SportPlacesInfoView
+      loading={loading}
+      userLocation={userLocation}
+      places={places}
+      type={type}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  header: { fontSize: 18, fontWeight: "bold", margin: 8, textAlign: "center" },
-});
