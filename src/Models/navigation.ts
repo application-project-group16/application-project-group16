@@ -4,4 +4,5 @@ export type MainTabParamList = {
   Swipe: undefined
   SportPlaces: undefined
   Settings: undefined
+  FriendList: undefined
 }

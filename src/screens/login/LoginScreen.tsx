@@ -19,7 +19,6 @@ export default function LoginScreen() {
         }
       await login(email, password);
         Alert.alert("Login successful!");
-        navigation.navigate("Home");
         } catch (err) {
             setError("Login failed. Please check your password or email.");
             Alert.alert("Login failed. Please check your password or email.");

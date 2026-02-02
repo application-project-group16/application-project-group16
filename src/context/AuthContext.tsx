@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, use } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/Config';
@@ -6,9 +6,9 @@ import { User } from '../Models/User';
 
 type AuthContextType = {
     user: User | null;
-    login: (email: string, password: string) => void;
-    register: (name: string, email: string, password: string) => void;
-    logout: () => void;
+    login: (email: string, password: string) => Promise<void>;
+    register: (name: string, email: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
