@@ -10,7 +10,8 @@ import LoginScreen from '../screens/login/LoginScreen';
 import RegisterScreen from '../screens/login/RegisterScreen';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import SettingsViewModel from '../screens/settings/SettingsViewModel';
-import FriendListView from '../screens/FriendList/FriendListView';
+import ChatPage from '../screens/FriendList/FriendChat/chatPage';
+
 
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -70,7 +71,7 @@ function RootNavigator() {
           component={SportPlacesStack} 
           options={{ headerShown: false }}/>
         <Tab.Screen name="Settings" component={SettingsViewModel} />
-        <Tab.Screen name="FriendList" component={FriendListView} />
+        <Tab.Screen name="FriendList" component={ChatPage} />
       </Tab.Navigator>
     </NavigationContainer>
   );

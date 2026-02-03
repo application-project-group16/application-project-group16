@@ -58,6 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
     }
     
+    useEffect(() => {
+  signOut(auth)
+}, [])
+
     return (
         <AuthContext.Provider 
         value={{ 
@@ -69,6 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
+
+
 }
 export function useAuth() {
     const context = useContext(AuthContext);
@@ -77,3 +83,4 @@ export function useAuth() {
     }
     return context;
 }
+

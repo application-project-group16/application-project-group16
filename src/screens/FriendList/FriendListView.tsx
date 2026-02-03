@@ -2,18 +2,22 @@
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import { useFriendListViewModel } from './FriendListViewModel'
 
-const FriendListScreen = () => {
-  const { friends } = useFriendListViewModel()
+type props = {
+  onSelectFriend: (friendId: string) => void
+}
 
+const FriendListScreen = ({ onSelectFriend }: props) => {
+  const { friends } = useFriendListViewModel()
+ 
 
  return (
   <View style = {styles.container}>
     <FlatList
       data={friends}
-      keyExtractor={(friend, index) => friend.uid ? friend.uid : `friend-${index}`}
+      keyExtractor={(friend, index) => friend.uid ?? `friend-${index}`}
       contentContainerStyle={styles.list}
       renderItem={({ item: friend }) => (
-        <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => onSelectFriend(friend.uid)}>
           <Image
             source={
               friend.image && friend.image.trim().length > 0
@@ -36,6 +40,8 @@ const FriendListScreen = () => {
   )
 }
 
+export default FriendListScreen
+
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f0f0' },
     list: { padding: 16 },
@@ -52,4 +58,3 @@ const styles = StyleSheet.create({
     sports: { fontSize: 14, color: '#666', marginTop: 4 },
 })
 
-export default FriendListScreen
