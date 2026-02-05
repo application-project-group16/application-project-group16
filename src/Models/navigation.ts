@@ -5,4 +5,6 @@ export type MainTabParamList = {
   SportPlaces: undefined
   Settings: undefined
   FriendList: undefined
+  Profile: undefined
+  ProfileView: { userId: string }
 }
