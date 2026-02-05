@@ -13,6 +13,7 @@ import SettingsViewModel from '../screens/settings/SettingsViewModel';
 import { ActivityIndicator } from 'react-native';
 import MyProfileView from '../screens/profile/MyProfileView';
 import ProfileView from '../screens/profile/SwipeProfileView';
+import ChatPage from '../screens/FriendList/FriendChat/chatPage';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
@@ -66,6 +67,7 @@ function MainTabs() {
       <Tab.Screen name="Swipe" component={SwipeView} />
       <Tab.Screen name="SportPlaces" component={SportPlacesStack} options={{ headerShown: false }} />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
+      <Tab.Screen name="FriendList" component={ChatPage} />
     </Tab.Navigator>
   )
 }

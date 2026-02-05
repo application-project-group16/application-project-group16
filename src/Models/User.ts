@@ -11,6 +11,14 @@ export interface User {
   bio: string;
 }
 
+export interface Friend {
+  uid: string
+  name: string
+  image?: string
+  age?: number
+  sports?: string[]
+}
+
 export interface Match {
   users: string[]
 }
