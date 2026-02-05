@@ -4,4 +4,6 @@ export type MainTabParamList = {
   Swipe: undefined
   SportPlaces: undefined
   Settings: undefined
+  Profile: undefined
+  ProfileView: { userId: string }
 }

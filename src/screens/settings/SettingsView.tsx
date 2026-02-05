@@ -6,13 +6,15 @@ const availableSports = AVAILABLE_SPORTS;
 
 interface SettingsViewProps {
   name: string;
-  age: string;
+  age: number;
   bio: string;
+  city: string;
   selectedSports: string[];
-  profileImage: string | null;
+  image: string | null;
   showImageOptions: boolean;
   onNameChange: (name: string) => void;
-  onAgeChange: (age: string) => void;
+  onAgeChange: (age: number) => void;
+  onCityChange: (city: string) => void;
   onBioChange: (bio: string) => void;
   onToggleSport: (sport: string) => void;
   onShowImageOptions: () => void;
@@ -26,11 +28,13 @@ export default function SettingsView({
   name,
   age,
   bio,
+  city,
   selectedSports,
-  profileImage,
+  image,
   showImageOptions,
   onNameChange,
   onAgeChange,
+  onCityChange,
   onBioChange,
   onToggleSport,
   onShowImageOptions,
@@ -43,8 +47,8 @@ export default function SettingsView({
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileImageSection}>
         <View style={styles.profileImageContainer}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          {image ? (
+            <Image source={{ uri: image }} style={styles.profileImage} />
           ) : (
             <View style={styles.profileImagePlaceholder}>
               <Text style={styles.placeholderText}>📷</Text>
@@ -70,10 +74,18 @@ export default function SettingsView({
       <Text style={styles.label}>Age</Text>
       <TextInput
         style={styles.input}
-        value={age}
-        onChangeText={onAgeChange}
+        value={age != null ? age.toString() : ''}
+        onChangeText={text => onAgeChange(text === '' ? null : Number(text))}
         placeholder="Enter your age"
         keyboardType="numeric"
+      />
+
+      <Text style={styles.label}>City</Text>
+      <TextInput
+        style={styles.input}
+        value={city}
+        onChangeText={onCityChange}
+        placeholder="Enter your city"
       />
 
       <Text style={styles.label}>Your Sports</Text>
