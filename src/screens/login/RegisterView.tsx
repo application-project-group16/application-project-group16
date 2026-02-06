@@ -1,5 +1,7 @@
 import { View, Text, TextInput, StyleSheet, ScrollView, Modal, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AVAILABLE_SPORTS } from '../../Models/User';
+import { gradients } from '../../Models/Gradient';
 
 const availableSports = AVAILABLE_SPORTS;
 
@@ -47,222 +49,239 @@ export default function RegisterView({
   onCompleteProfile,
 }: RegisterViewProps) {
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={gradients.authBackground} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Create Account</Text>
-        
-        <TextInput
-          placeholder="Full Name"
-          value={name}
-          onChangeText={onNameChange}
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={onEmailChange}
-          style={styles.input}
-          keyboardType="email-address"
-          placeholderTextColor="#999"
-        />
-        <TextInput
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={onPasswordChange}
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-        <TextInput
-          placeholder="Confirm Password"
-          secureTextEntry
-          value={secondPassword}
-          onChangeText={onSecondPasswordChange}
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-        
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        
-        <TouchableOpacity style={styles.registerButton} onPress={onRegister}>
-          <Text style={styles.buttonText}>Register</Text>
-        </TouchableOpacity>
+        <View style={styles.card}>
+          <Text style={styles.logo}>🏋️ Sport Buddies</Text>
+          
+          <View style={styles.tabContainer}>
+            <TouchableOpacity style={styles.loginTab} onPress={onNavigateToLogin}>
+              <Text style={styles.inactiveTabText}>Login</Text>
+            </TouchableOpacity>
+            <LinearGradient
+              colors={gradients.authBackground}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.signUpTab}
+            >
+              <Text style={styles.activeTabText}>Sign Up</Text>
+            </LinearGradient>
+          </View>
 
-        <TouchableOpacity onPress={onNavigateToLogin}>
-          <Text style={styles.loginLink}>Already have an account? Login</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>✉️</Text>
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={onEmailChange}
+              keyboardType="email-address"
+              placeholderTextColor="#ccc"
+              style={styles.input}
+            />
+          </View>
 
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Complete Your Profile</Text>
-            
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>🔒</Text>
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={onPasswordChange}
+              secureTextEntry
+              placeholderTextColor="#ccc"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>🔒</Text>
+            <TextInput
+              placeholder="Second Password"
+              value={secondPassword}
+              onChangeText={onSecondPasswordChange}
+              secureTextEntry
+              placeholderTextColor="#ccc"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>👤</Text>
+            <TextInput
+              placeholder="Name"
+              value={name}
+              onChangeText={onNameChange}
+              style={styles.input}
+              placeholderTextColor="#ccc"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>📅</Text>
             <TextInput
               placeholder="Age"
               value={age}
               onChangeText={onAgeChange}
               keyboardType="numeric"
               style={styles.input}
-              placeholderTextColor="#999"
+              placeholderTextColor="#ccc"
             />
-
-            <Text style={styles.sectionLabel}>Gender</Text>
-            <View style={styles.genderContainer}>
-              {['Male', 'Female', 'Other'].map(g => (
-                <TouchableOpacity
-                  key={g}
-                  style={[styles.genderButton, gender === g && styles.genderButtonSelected]}
-                  onPress={() => onGenderChange(g)}
-                >
-                  <Text style={[styles.genderButtonText, gender === g && styles.genderButtonTextSelected]}>
-                    {g}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.sectionLabel}>Select Sports (at least 1)</Text>
-            <View style={styles.sportsContainer}>
-              {availableSports.map(sport => (
-                <TouchableOpacity
-                  key={sport}
-                  style={[styles.sportChip, selectedSports.includes(sport) && styles.sportChipSelected]}
-                  onPress={() => onToggleSport(sport)}
-                >
-                  <Text style={[styles.sportChipText, selectedSports.includes(sport) && styles.sportChipTextSelected]}>
-                    {sport}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity 
-              onPress={onCompleteProfile}
-              style={styles.completeButton}
-            >
-              <Text style={styles.buttonText}>Complete Profile</Text>
-            </TouchableOpacity>
           </View>
+
+          <Text style={styles.sectionLabel}>Select Your Sports</Text>
+          <View style={styles.sportsContainer}>
+            {availableSports.map(sport => (
+              <TouchableOpacity
+                key={sport}
+                style={[styles.sportChip, selectedSports.includes(sport) && styles.sportChipSelected]}
+                onPress={() => onToggleSport(sport)}
+              >
+                <Text style={[styles.sportChipText, selectedSports.includes(sport) && styles.sportChipTextSelected]}>
+                  {sport}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={styles.bioInputContainer}>
+            <Text style={styles.bioIcon}>💬</Text>
+            <TextInput
+              placeholder="Tell us about yourself..."
+              value={secondPassword}
+              onChangeText={onSecondPasswordChange}
+              style={[styles.input, styles.bioInput]}
+              placeholderTextColor="#ccc"
+              multiline
+            />
+          </View>
+
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          
+          <LinearGradient
+            colors={gradients.authBackground}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.registerButton}
+          >
+            <TouchableOpacity onPress={onRegister} style={styles.buttonInner}>
+              <Text style={styles.registerButtonText}>Sign Up</Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
-      </Modal>
-    </View>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#d15f13',
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
-  title: {
-    fontSize: 28,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  logo: {
+    fontSize: 32,
     fontWeight: '700',
-    color: '#000',
-    marginBottom: 30,
+    color: '#FF6B35',
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    gap: 12,
+  },
+  loginTab: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  signUpTab: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  inactiveTabText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  activeTabText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: '#fafafa',
+  },
+  bioInputContainer: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: '#fafafa',
+    paddingTop: 12,
+  },
+  inputIcon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  bioIcon: {
+    fontSize: 18,
+    marginRight: 10,
+    marginTop: 12,
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 2,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 12,
-    fontSize: 16,
-    borderColor: '#000000',
-  },
-  errorText: {
-    color: '#d32f2f',
-    fontSize: 14,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  registerButton: {
-    backgroundColor: '#000000',
-    borderRadius: 8,
-    paddingVertical: 13,
-    marginTop: 10,
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#5eff00',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  loginLink: {
-    color: '#5eff00',
-    fontSize: 14,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-  },
-  modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#333',
   },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '90%',
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 20,
-    color: '#000',
-    textAlign: 'center',
+  bioInput: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 15,
-  },
-  genderButton: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: '#ddd',
-    alignItems: 'center',
-  },
-  genderButtonSelected: {
-    backgroundColor: '#ff1a75',
-    borderColor: '#ff1a75',
-  },
-  genderButtonText: {
-    color: '#666',
     fontSize: 14,
-    fontWeight: '500',
-  },
-  genderButtonTextSelected: {
-    color: '#fff',
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+    marginTop: 8,
   },
   sportsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sportChip: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#f0f0f0',
@@ -270,22 +289,35 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   sportChipSelected: {
-    backgroundColor: '#b16004',
-    borderColor: '#df620e',
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
   },
   sportChipText: {
-    color: '#302e2e',
-    fontSize: 14,
+    color: '#666',
+    fontSize: 13,
     fontWeight: '500',
   },
   sportChipTextSelected: {
     color: '#fff',
   },
-  completeButton: {
-    backgroundColor: '#ad3a0d',
-    borderRadius: 8,
-    paddingVertical: 13,
+  errorText: {
+    color: '#d32f2f',
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  registerButton: {
+    borderRadius: 12,
+    marginTop: 16,
+    overflow: 'hidden',
+  },
+  buttonInner: {
+    paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 15,
+  },
+  registerButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });

@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Modal, TouchableWithoutFeedback } from 'react-native';
-import { AVAILABLE_SPORTS } from '../../Models/User'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, TouchableWithoutFeedback, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { AVAILABLE_SPORTS } from '../../Models/User';
+import { gradients, colors } from '../../Models/Gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const availableSports = AVAILABLE_SPORTS;
 
@@ -11,6 +14,10 @@ interface SettingsViewProps {
   selectedSports: string[];
   profileImage: string | null;
   showImageOptions: boolean;
+  showPasswordModal: boolean;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
   onNameChange: (name: string) => void;
   onAgeChange: (age: string) => void;
   onBioChange: (bio: string) => void;
@@ -20,6 +27,12 @@ interface SettingsViewProps {
   onPickFromCamera: () => void;
   onPickFromGallery: () => void;
   onSave: () => void;
+  onShowPasswordModal: () => void;
+  onHidePasswordModal: () => void;
+  onCurrentPasswordChange: (password: string) => void;
+  onNewPasswordChange: (password: string) => void;
+  onConfirmPasswordChange: (password: string) => void;
+  onChangePassword: () => void;
   onLogout: () => void;
 }
 
@@ -30,6 +43,10 @@ export default function SettingsView({
   selectedSports,
   profileImage,
   showImageOptions,
+  showPasswordModal,
+  currentPassword,
+  newPassword,
+  confirmPassword,
   onNameChange,
   onAgeChange,
   onBioChange,
@@ -39,82 +56,124 @@ export default function SettingsView({
   onPickFromCamera,
   onPickFromGallery,
   onSave,
+  onShowPasswordModal,
+  onHidePasswordModal,
+  onCurrentPasswordChange,
+  onNewPasswordChange,
+  onConfirmPasswordChange,
+  onChangePassword,
   onLogout,
 }: SettingsViewProps) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.profileImageSection}>
-        <View style={styles.profileImageContainer}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <Text style={styles.placeholderText}>📷</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.profileTop}>
+          <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.profileImageTop} />
+            ) : (
+              <MaterialCommunityIcons name="account-circle" size={120} color="#FF6B35" />
+            )}
+            <View style={styles.editIconContainer}>
+              <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
             </View>
-          )}
-        </View>
-        <TouchableOpacity 
-          style={styles.editImageButton}
-          onPress={onShowImageOptions}
-        >
-          <Text style={styles.editImageButtonText}>Edit Photo</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.label}>Name</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={onNameChange}
-        placeholder="Enter your name"
-      />
-
-      <Text style={styles.label}>Age</Text>
-      <TextInput
-        style={styles.input}
-        value={age}
-        onChangeText={onAgeChange}
-        placeholder="Enter your age"
-        keyboardType="numeric"
-      />
-
-      <Text style={styles.label}>Your Sports</Text>
-      <View style={styles.sportsContainer}>
-        {availableSports.map(sport => (
-          <TouchableOpacity
-            key={sport}
-            style={[
-              styles.sportChip,
-              selectedSports.includes(sport) && styles.sportChipSelected
-            ]}
-            onPress={() => onToggleSport(sport)}
-          >
-            <Text style={[
-              styles.sportChipText,
-              selectedSports.includes(sport) && styles.sportChipTextSelected
-            ]}>
-              {sport}
-            </Text>
           </TouchableOpacity>
-        ))}
-      </View>
+        </View>
+        <Text style={styles.sectionLabel}>
+          <MaterialCommunityIcons name="account" size={18} color={colors.text} /> Name
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={onNameChange}
+          placeholder="Enter your name"
+          placeholderTextColor="#ccc"
+        />
 
-      <Text style={styles.label}>Bio</Text>
-      <TextInput
-        style={[styles.input, styles.bioInput]}
-        value={bio}
-        onChangeText={onBioChange}
-        placeholder="Tell something about yourself"
-        multiline
-      />
+        <Text style={styles.sectionLabel}>
+          <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={age}
+          onChangeText={onAgeChange}
+          placeholder="Enter your age"
+          keyboardType="numeric"
+          placeholderTextColor="#ccc"
+        />
 
-      <TouchableOpacity style={styles.saveButton} onPress={onSave}>
-        <Text style={styles.saveButtonText}>Save Changes</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
-      
+        <Text style={styles.sectionLabel}>Your Sports</Text>
+        <View style={styles.sportsContainer}>
+          {availableSports.map(sport => (
+            <TouchableOpacity
+              key={sport}
+              style={[
+                styles.sportChip,
+                selectedSports.includes(sport) && styles.sportChipSelected
+              ]}
+              onPress={() => onToggleSport(sport)}
+            >
+              <Text style={[
+                styles.sportChipText,
+                selectedSports.includes(sport) && styles.sportChipTextSelected
+              ]}>
+                {sport}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.sectionLabel}>
+          <MaterialCommunityIcons name="message-text" size={18} color={colors.text} /> Bio
+        </Text>
+        <TextInput
+          style={[styles.input, styles.bioInput]}
+          value={bio}
+          onChangeText={onBioChange}
+          placeholder="Tell something about yourself..."
+          placeholderTextColor="#ccc"
+          multiline
+        />
+
+        <LinearGradient
+          colors={gradients.authBackground}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.saveButton}
+        >
+          <TouchableOpacity onPress={onSave} style={[styles.buttonInner, styles.buttonRow]}>
+            <MaterialCommunityIcons name="content-save" size={20} color="#fff" style={styles.buttonIconLeft} />
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+
+        <LinearGradient
+          colors={gradients.authBackground}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.changePasswordButton}
+        >
+          <TouchableOpacity 
+            style={[styles.buttonInner, styles.buttonRow]}
+            onPress={onShowPasswordModal}
+          >
+            <MaterialCommunityIcons name="lock-reset" size={20} color="#fff" style={styles.buttonIconLeft} />
+            <Text style={styles.changePasswordButtonText}>Change Password</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+
+        <LinearGradient
+          colors={['#d32f2f', '#c62828']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.logoutButton}
+        >
+          <TouchableOpacity onPress={onLogout} style={[styles.buttonInner, styles.buttonRow]}>
+            <MaterialCommunityIcons name="logout" size={20} color="#fff" style={styles.buttonIconLeft} />
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </ScrollView>
       <Modal
         visible={showImageOptions}
         transparent
@@ -129,58 +188,221 @@ export default function SettingsView({
                   style={styles.imageOption}
                   onPress={onPickFromCamera}
                 >
-                  <Text style={styles.imageOptionText}>Take Photo</Text>
+                  <Text style={styles.imageOptionText}>📷 Take Photo</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.imageOption}
                   onPress={onPickFromGallery}
                 >
-                  <Text style={styles.imageOptionText}>Choose from Gallery</Text>
+                  <Text style={styles.imageOptionText}>🖼️ Choose from Gallery</Text>
                 </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </ScrollView>
+
+      <Modal
+        visible={showPasswordModal}
+        transparent
+        animationType="slide"
+        onRequestClose={onHidePasswordModal}
+      >
+        <TouchableWithoutFeedback onPress={onHidePasswordModal}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.passwordModalContent}>
+                <Text style={styles.passwordModalTitle}>Change Password</Text>
+
+                <TextInput
+                  style={styles.input}
+                  value={currentPassword}
+                  onChangeText={onCurrentPasswordChange}
+                  placeholder="Current Password"
+                  secureTextEntry
+                  placeholderTextColor="#ccc"
+                />
+
+                <TextInput
+                  style={[styles.input, styles.passwordInput]} 
+                  value={newPassword}
+                  onChangeText={onNewPasswordChange}
+                  placeholder="New Password"
+                  secureTextEntry
+                  placeholderTextColor="#ccc"
+                />
+
+                <TextInput
+                  style={[styles.input, styles.passwordInput]} 
+                  value={confirmPassword}
+                  onChangeText={onConfirmPasswordChange}
+                  placeholder="Confirm New Password"
+                  secureTextEntry
+                  placeholderTextColor="#ccc"
+                />
+
+                <LinearGradient
+                  colors={gradients.authBackground}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.saveButton}
+                >
+                  <TouchableOpacity onPress={onChangePassword} style={styles.buttonInner}>
+                    <Text style={styles.saveButtonText}>Update Password</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+
+                <TouchableOpacity 
+                  style={styles.cancelButton}
+                  onPress={onHidePasswordModal}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  profileImageSection: { alignItems: 'center', marginBottom: 24 },
-  profileImageContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent'
+  },
+  profileTop: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 3,
+  },
+  profileImageWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileImageTop: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    overflow: 'hidden',
-    marginBottom: 12,
-    backgroundColor: '#f0f0f0',
+    borderWidth: 3,
+    borderColor: '#FF6B35',
   },
-  profileImage: {
-    width: '100%',
-    height: '100%',
-  },
-  profileImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
+  editIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FF6B35',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
     alignItems: 'center',
-    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
-  placeholderText: {
-    fontSize: 48,
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  editImageButton: {
-    backgroundColor: '#ff9800',
-    paddingHorizontal: 24,
-    paddingVertical: 10,
+  buttonIconLeft: {
+    marginRight: 8,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 1,
+    paddingBottom: 10,
+  },
+  sectionLabel: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#333',
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
     borderRadius: 8,
+    padding: 14,
+    backgroundColor: '#fafafa',
+    fontSize: 16,
+    color: '#333',
   },
-  editImageButtonText: {
+  passwordInput: {
+    marginTop: 7,
+  },
+  bioInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  sportsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 12,
+    marginTop: 10,
+  },
+  sportChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  sportChipSelected: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
+  },
+  sportChipText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  sportChipTextSelected: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 14,
+  },
+  saveButton: {
+    borderRadius: 12,
+    marginTop: 20,
+    overflow: 'hidden',
+  },
+  changePasswordButton: {
+    borderRadius: 12,
+    marginTop: 10,
+    overflow: 'hidden', 
+  },
+  changePasswordButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  logoutButton: {
+    borderRadius: 12,
+    marginTop: 10,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  buttonInner: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
   modalOverlay: {
     flex: 1,
@@ -207,62 +429,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-  label: { fontWeight: 'bold', marginTop: 16, marginBottom: 6 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    backgroundColor: '#fff'
+  passwordModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 22,
+    maxHeight: '80%',
+    paddingBottom: 13,
   },
-  bioInput: { minHeight: 80, textAlignVertical: 'top' },
-  sportsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+  passwordModalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 22,
+    color: '#000',
+    textAlign: 'center',
   },
-  sportChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#eee',
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  sportChipSelected: {
-    backgroundColor: '#ff9800',
-  },
-  sportChipText: {
-    color: '#333',
-  },
-  sportChipTextSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  saveButton: {
-    backgroundColor: '#ff9800',
-    borderRadius: 8,
-    paddingVertical: 14,
+  cancelButton: {
+    marginTop: 8,
+    paddingVertical: 12,
     alignItems: 'center',
-    marginTop: 24,
   },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  cancelButtonText: {
+    color: '#666',
     fontSize: 16,
-  },
-  logoutButton: {
-    backgroundColor: '#d32f2f',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  logoutButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: '600',
   },
 });

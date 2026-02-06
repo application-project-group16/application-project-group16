@@ -38,14 +38,19 @@ export default function RegisterViewModel() {
   };
 
   const handleProfile = async () => {
+    const ageNum = parseInt(age);
     if (!age || !gender || selectedSports.length === 0) {
       Alert.alert('Fill in all required profile fields and choose at least one sport.');
+      return;
+    }
+    if (ageNum < 18 || ageNum > 70) {
+      Alert.alert('Age must be between 18 and 70.');
       return;
     }
     try {
       if (user?.uid) {
         await updateDoc(doc(db, 'users', user.uid), {
-          age: parseInt(age),
+          age: ageNum,
           gender: gender,
           sports: selectedSports,
         });

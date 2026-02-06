@@ -23,7 +23,7 @@ export default function LoginView({
     <LinearGradient colors={gradients.authBackground} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
-          <Text style={styles.logo}>🏋️ FitMatch</Text>
+          <Text style={styles.logo}>🏋️ Sport Buddies</Text>
           
           <View style={styles.tabContainer}>
             <LinearGradient
