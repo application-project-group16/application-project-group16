@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AVAILABLE_SPORTS } from '../../Models/User';
 import { gradients, colors } from '../../Models/Gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const availableSports = AVAILABLE_SPORTS;
 
@@ -68,6 +69,8 @@ export default function SettingsView({
   onChangePassword,
   onLogout,
 }: SettingsViewProps) {
+  const navigation = useNavigation();
+  
   return (
     <View style={styles.container}>
       <TouchableOpacity 
