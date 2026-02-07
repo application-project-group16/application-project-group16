@@ -6,23 +6,33 @@ import { doc, updateDoc } from '../../firebase/Config';
 import { db } from '../../firebase/Config';
 import RegisterView from './RegisterView';
 
+const FINLAND_CITIES = [
+  'Helsinki', 'Espoo', 'Tampere', 'Vantaa', 'Turku', 'Oulu', 'Kuopio',
+  'Jyväskylä', 'Lahti', 'Pori', 'Kouvola', 'Joensuu', 'Lappeenranta',
+  'Hämeenlinna', 'Vaasa', 'Seinäjoki', 'Rovaniemi', 'Mikkeli', 'Savonlinna'
+];
+
 export default function RegisterViewModel() {
   const navigation = useNavigation<any>();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [secondPassword, setSecondPassword] = useState('');
   const [age, setAge] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [gender, setGender] = useState('');
+  const [location, setLocation] = useState('');
+  const [bio, setBio] = useState('');
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const { register, user } = useAuth();
   const [error, setError] = useState('');
+  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   const handleRegister = async () => {
     try {
       setError('');
-      if (password !== secondPassword) {
+      if (password !== confirmPassword) {
         setError('Passwords do not match.');
         return;
       }
@@ -39,7 +49,7 @@ export default function RegisterViewModel() {
 
   const handleProfile = async () => {
     const ageNum = parseInt(age);
-    if (!age || !gender || selectedSports.length === 0) {
+    if (!age || !gender || !location || selectedSports.length === 0) {
       Alert.alert('Fill in all required profile fields and choose at least one sport.');
       return;
     }
@@ -52,6 +62,8 @@ export default function RegisterViewModel() {
         await updateDoc(doc(db, 'users', user.uid), {
           age: ageNum,
           gender: gender,
+          location: location,
+          bio: bio,
           sports: selectedSports,
         });
         Alert.alert('Profile updated!');
@@ -75,23 +87,38 @@ export default function RegisterViewModel() {
     <RegisterView
       name={name}
       email={email}
-      password={password}
-      secondPassword={secondPassword}
       age={age}
+      password={password}
+      confirmPassword={confirmPassword}
       gender={gender}
+      location={location}
+      bio={bio}
       selectedSports={selectedSports}
       modalVisible={modalVisible}
       error={error}
+      finnlandCities={FINLAND_CITIES}
       onNameChange={setName}
       onEmailChange={setEmail}
       onPasswordChange={setPassword}
-      onSecondPasswordChange={setSecondPassword}
+      onConfirmPasswordChange={setConfirmPassword}
       onAgeChange={setAge}
-      onGenderChange={setGender}
+      onGenderChange={(option) => {
+        setGender(option);
+        setShowGenderDropdown(false);
+      }}
+      onLocationChange={(city) => {
+        setLocation(city);
+        setShowLocationDropdown(false);
+      }}
+      onBioChange={setBio}
       onToggleSport={toggleSport}
       onRegister={handleRegister}
       onNavigateToLogin={() => navigation.navigate('Login')}
       onCompleteProfile={handleProfile}
+      showGenderDropdown={showGenderDropdown}
+      showLocationDropdown={showLocationDropdown}
+      onToggleGenderDropdown={() => setShowGenderDropdown(!showGenderDropdown)}
+      onToggleLocationDropdown={() => setShowLocationDropdown(!showLocationDropdown)}
     />
   );
 }

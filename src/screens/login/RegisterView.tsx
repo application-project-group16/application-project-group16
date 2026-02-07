@@ -2,57 +2,79 @@ import { View, Text, TextInput, StyleSheet, ScrollView, Modal, TouchableOpacity 
 import { LinearGradient } from 'expo-linear-gradient';
 import { AVAILABLE_SPORTS } from '../../Models/User';
 import { gradients } from '../../Models/Gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const availableSports = AVAILABLE_SPORTS;
 
 interface RegisterViewProps {
   name: string;
   email: string;
-  password: string;
-  secondPassword: string;
   age: string;
+  password: string;
+  confirmPassword: string;
   gender: string;
+  location: string;
+  bio: string;
   selectedSports: string[];
   modalVisible: boolean;
   error: string;
+  finnlandCities: string[];
   onNameChange: (name: string) => void;
   onEmailChange: (email: string) => void;
   onPasswordChange: (password: string) => void;
-  onSecondPasswordChange: (password: string) => void;
+  onConfirmPasswordChange: (password: string) => void;
   onAgeChange: (age: string) => void;
-  onGenderChange: (gender: string) => void;
+  onBioChange: (bio: string) => void;
   onToggleSport: (sport: string) => void;
   onRegister: () => void;
   onNavigateToLogin: () => void;
   onCompleteProfile: () => void;
+  showGenderDropdown: boolean;
+  showLocationDropdown: boolean;
+  onToggleGenderDropdown: () => void;
+  onToggleLocationDropdown: () => void;
+  onGenderChange: (gender: string) => void;
+  onLocationChange: (location: string) => void;
 }
 
 export default function RegisterView({
   name,
   email,
-  password,
-  secondPassword,
   age,
+  password,
+  confirmPassword,
   gender,
+  location,
+  bio,
   selectedSports,
   modalVisible,
   error,
+  finnlandCities,
   onNameChange,
   onEmailChange,
-  onPasswordChange,
-  onSecondPasswordChange,
   onAgeChange,
-  onGenderChange,
+  onPasswordChange,
+  onConfirmPasswordChange,
+  onBioChange,
   onToggleSport,
   onRegister,
   onNavigateToLogin,
   onCompleteProfile,
+  showGenderDropdown,
+  showLocationDropdown,
+  onToggleGenderDropdown,
+  onToggleLocationDropdown,
+  onGenderChange,
+  onLocationChange,
 }: RegisterViewProps) {
+
   return (
     <LinearGradient colors={gradients.authBackground} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
-          <Text style={styles.logo}>🏋️ Sport Buddies</Text>
+          <Text style={styles.logo}>
+            <MaterialCommunityIcons name="dumbbell" size={28} color="#FF6B35" /> Sport Buddies
+          </Text>
           
           <View style={styles.tabContainer}>
             <TouchableOpacity style={styles.loginTab} onPress={onNavigateToLogin}>
@@ -68,8 +90,21 @@ export default function RegisterView({
             </LinearGradient>
           </View>
 
+          <Text style={styles.sectionLabel}>Profile Details</Text>
+
           <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>✉️</Text>
+            <MaterialCommunityIcons name="account" size={18} color="#666" style={styles.inputIcon} />
+            <TextInput
+              placeholder="Name"
+              value={name}
+              onChangeText={onNameChange}
+              style={styles.input}
+              placeholderTextColor="#ccc"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <MaterialCommunityIcons name="email-outline" size={18} color="#666" style={styles.inputIcon} />
             <TextInput
               placeholder="Email"
               value={email}
@@ -81,42 +116,7 @@ export default function RegisterView({
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>🔒</Text>
-            <TextInput
-              placeholder="Password"
-              value={password}
-              onChangeText={onPasswordChange}
-              secureTextEntry
-              placeholderTextColor="#ccc"
-              style={styles.input}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>🔒</Text>
-            <TextInput
-              placeholder="Second Password"
-              value={secondPassword}
-              onChangeText={onSecondPasswordChange}
-              secureTextEntry
-              placeholderTextColor="#ccc"
-              style={styles.input}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>👤</Text>
-            <TextInput
-              placeholder="Name"
-              value={name}
-              onChangeText={onNameChange}
-              style={styles.input}
-              placeholderTextColor="#ccc"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>📅</Text>
+            <MaterialCommunityIcons name="calendar" size={18} color="#666" style={styles.inputIcon} />
             <TextInput
               placeholder="Age"
               value={age}
@@ -127,7 +127,70 @@ export default function RegisterView({
             />
           </View>
 
+          <View style={[styles.dropdownContainer, showGenderDropdown && styles.dropdownContainerActive]}>
+            <TouchableOpacity 
+              style={styles.inputContainer}
+              onPress={() => onToggleGenderDropdown()}
+            >
+              <MaterialCommunityIcons name="human" size={18} color="#666" style={styles.inputIcon} />
+              <Text style={[styles.input, { color: gender ? '#333' : '#ccc' }]}>
+                {gender || 'Select Gender'}
+              </Text>
+              <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+            </TouchableOpacity>
+
+            {showGenderDropdown && (
+              <View style={styles.dropdownMenu}>
+                {['Male', 'Female', 'Other'].map(option => (
+                  <TouchableOpacity
+                    key={option}
+                    style={styles.dropdownOption}
+                    onPress={() => {
+                      onGenderChange(option);
+                      onToggleGenderDropdown();
+                    }}
+                  >
+                    <Text style={styles.dropdownOptionText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
+          <View style={[styles.dropdownContainer, showLocationDropdown && styles.dropdownContainerActive]}>
+            <TouchableOpacity 
+              style={styles.inputContainer}
+              onPress={() => onToggleLocationDropdown()}
+            >
+              <MaterialCommunityIcons name="map-marker" size={18} color="#666" style={styles.inputIcon} />
+              <Text style={[styles.input, { color: location ? '#333' : '#ccc' }]}>
+                {location || 'Select City'}
+              </Text>
+              <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+            </TouchableOpacity>
+
+            {showLocationDropdown && (
+              <View style={styles.dropdownMenu}>
+                <ScrollView nestedScrollEnabled style={{ maxHeight: 150 }}>
+                  {finnlandCities.map(city => (
+                    <TouchableOpacity
+                      key={city}
+                      style={styles.dropdownOption}
+                      onPress={() => {
+                        onLocationChange(city);
+                        onToggleLocationDropdown();
+                      }}
+                    >
+                      <Text style={styles.dropdownOptionText}>{city}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+
           <Text style={styles.sectionLabel}>Select Your Sports</Text>
+
           <View style={styles.sportsContainer}>
             {availableSports.map(sport => (
               <TouchableOpacity
@@ -142,15 +205,42 @@ export default function RegisterView({
             ))}
           </View>
 
+          <Text style={styles.sectionLabel}>Bio</Text>
+
           <View style={styles.bioInputContainer}>
-            <Text style={styles.bioIcon}>💬</Text>
             <TextInput
               placeholder="Tell us about yourself..."
-              value={secondPassword}
-              onChangeText={onSecondPasswordChange}
+              value={bio}
+              onChangeText={onBioChange}
               style={[styles.input, styles.bioInput]}
               placeholderTextColor="#ccc"
               multiline
+            />
+          </View>
+
+          <Text style={styles.sectionLabel}>Password</Text>
+
+          <View style={styles.inputContainer}>
+            <MaterialCommunityIcons name="lock-outline" size={18} color="#666" style={styles.inputIcon} />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={onPasswordChange}
+              secureTextEntry
+              placeholderTextColor="#ccc"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <MaterialCommunityIcons name="lock-outline" size={18} color="#666" style={styles.inputIcon} />
+            <TextInput
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChangeText={onConfirmPasswordChange}
+              secureTextEntry
+              placeholderTextColor="#ccc"
+              style={styles.input}
             />
           </View>
 
@@ -202,7 +292,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: 24,
+    marginBottom: 15,
     gap: 12,
   },
   loginTab: {
@@ -243,19 +333,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
+    paddingHorizontal: 5,
+    marginBottom: 10,
     backgroundColor: '#fafafa',
     paddingTop: 12,
   },
   inputIcon: {
     fontSize: 18,
     marginRight: 10,
-  },
-  bioIcon: {
-    fontSize: 18,
-    marginRight: 10,
-    marginTop: 12,
   },
   input: {
     flex: 1,
@@ -266,19 +351,20 @@ const styles = StyleSheet.create({
   bioInput: {
     minHeight: 80,
     textAlignVertical: 'top',
+    paddingTop: 0,
   },
   sectionLabel: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 12,
-    marginTop: 8,
+    marginBottom: 15,
+    marginTop: 5,
   },
   sportsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   sportChip: {
     paddingHorizontal: 14,
@@ -319,5 +405,36 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '700',
+  },
+  dropdownContainer: {
+    position: 'relative',
+    marginBottom: 1,
+    zIndex: 1,
+  },
+  dropdownContainerActive: {
+    zIndex: 50,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: '#333',
   },
 });

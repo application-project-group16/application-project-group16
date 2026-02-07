@@ -1,6 +1,7 @@
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { gradients } from '../../Models/Gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface LoginViewProps {
   email: string;
@@ -22,9 +23,13 @@ export default function LoginView({
   return (
     <LinearGradient colors={gradients.authBackground} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+
         <View style={styles.card}>
-          <Text style={styles.logo}>🏋️ Sport Buddies</Text>
           
+          <Text style={styles.logo}>
+            <MaterialCommunityIcons name="dumbbell" size={28} color="#FF6B35" /> Sport Buddies
+          </Text>
+
           <View style={styles.tabContainer}>
             <LinearGradient
               colors={gradients.authBackground}
@@ -43,7 +48,7 @@ export default function LoginView({
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>✉️</Text>
+            <MaterialCommunityIcons name="email-outline" size={18} color="#666" style={styles.inputIcon} />
             <TextInput
               placeholder="Email"
               value={email}
@@ -55,7 +60,7 @@ export default function LoginView({
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputIcon}>🔒</Text>
+            <MaterialCommunityIcons name="lock-outline" size={18} color="#666" style={styles.inputIcon} />
             <TextInput
               placeholder="Password"
               value={password}
