@@ -70,11 +70,18 @@ export default function SettingsView({
 }: SettingsViewProps) {
   return (
     <View style={styles.container}>
+      <TouchableOpacity 
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
+        <Text style={styles.backButtonText}>Back</Text>
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileTop}>
           <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.profileImageTop} />
+            {image ? (
+              <Image source={{ uri: image }} style={styles.profileImageTop} />
             ) : (
               <MaterialCommunityIcons name="account-circle" size={120} color="#FF6B35" />
             )}
@@ -284,7 +291,6 @@ const styles = StyleSheet.create({
   },
   profileTop: {
     alignItems: 'center',
-    paddingTop: 20,
     paddingBottom: 3,
   },
   profileImageWrapper: {
@@ -468,5 +474,17 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 16,
     fontWeight: '600',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  backButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FF6B35',
   },
 });
