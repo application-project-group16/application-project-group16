@@ -2,6 +2,12 @@ export interface User {
     uid: string;
     name: string;
     email: string;
+    age: number;
+    gender: string;
+    location: string;
+    sports: string[];
+    bio: string;
+    image?: string;
     createdAt: Date;
 }
 
@@ -23,3 +29,10 @@ export const AVAILABLE_SPORTS = [
 ] as const;
 
 export type Sport = typeof AVAILABLE_SPORTS[number];
+
+export const FINLAND_CITIES = [
+  'Helsinki', 'Espoo', 'Tampere', 'Vantaa', 'Turku', 'Oulu', 'Kuopio',
+  'Jyväskylä', 'Lahti', 'Pori', 'Kouvola', 'Joensuu', 'Lappeenranta',
+  'Hämeenlinna', 'Vaasa', 'Seinäjoki', 'Rovaniemi', 'Mikkeli', 'Savonlinna'
+];
+

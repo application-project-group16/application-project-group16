@@ -30,7 +30,6 @@ interface RegisterViewProps {
   onToggleSport: (sport: string) => void;
   onRegister: () => void;
   onNavigateToLogin: () => void;
-  onCompleteProfile: () => void;
   showGenderDropdown: boolean;
   showLocationDropdown: boolean;
   onToggleGenderDropdown: () => void;
@@ -63,7 +62,6 @@ export default function RegisterView({
   onToggleSport,
   onRegister,
   onNavigateToLogin,
-  onCompleteProfile,
   showGenderDropdown,
   showLocationDropdown,
   onToggleGenderDropdown,
@@ -193,14 +191,19 @@ export default function RegisterView({
                     <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
                   </>
                 ) : (
-                  <TextInput
-                    placeholder="Search city..."
-                    value={cityQuery}
-                    onChangeText={onCityQueryChange}
-                    style={[styles.input, { flex: 1 }]}
-                    placeholderTextColor="#999"
-                    autoFocus
-                  />
+                  <>
+                    <TextInput
+                      placeholder="Search city..."
+                      value={cityQuery}
+                      onChangeText={onCityQueryChange}
+                      style={[styles.input, { flex: 1 }]}
+                      placeholderTextColor="#999"
+                      autoFocus
+                    />
+                    <TouchableOpacity onPress={onToggleLocationDropdown}>
+                      <MaterialCommunityIcons name="close" size={18} color="#666" />
+                    </TouchableOpacity>
+                  </>
                 )}
               </TouchableOpacity>
 

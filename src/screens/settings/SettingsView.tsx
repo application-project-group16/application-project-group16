@@ -182,22 +182,28 @@ export default function SettingsView({
       >
         <TouchableWithoutFeedback onPress={onHideImageOptions}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.imageOptionsContainer}>
-                <TouchableOpacity 
-                  style={styles.imageOption}
-                  onPress={onPickFromCamera}
-                >
-                  <Text style={styles.imageOptionText}>📷 Take Photo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.imageOption}
-                  onPress={onPickFromGallery}
-                >
-                  <Text style={styles.imageOptionText}>🖼️ Choose from Gallery</Text>
-                </TouchableOpacity>
+        <TouchableWithoutFeedback>
+          <View style={styles.imageOptionsContainer}>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={onPickFromCamera}
+            >
+              <View style={styles.imageOptionContent}>
+                <MaterialCommunityIcons name="camera" size={20} color="#333" style={styles.imageOptionIcon} />
+                <Text style={styles.imageOptionText}>Take Photo</Text>
               </View>
-            </TouchableWithoutFeedback>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.imageOption}
+              onPress={onPickFromGallery}
+            >
+              <View style={styles.imageOptionContent}>
+                <MaterialCommunityIcons name="image" size={20} color="#333" style={styles.imageOptionIcon} />
+                <Text style={styles.imageOptionText}>Choose from Gallery</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
@@ -423,11 +429,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+  imageOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  imageOptionIcon: {
+    marginRight: 12,
+  },
   imageOptionText: {
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
-    textAlign: 'center',
   },
   passwordModalContent: {
     backgroundColor: '#fff',

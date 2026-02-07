@@ -5,12 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { doc, updateDoc } from '../../firebase/Config';
 import { db } from '../../firebase/Config';
 import RegisterView from './RegisterView';
+import { FINLAND_CITIES } from '../../Models/User';
 
-const FINLAND_CITIES = [
-  'Helsinki', 'Espoo', 'Tampere', 'Vantaa', 'Turku', 'Oulu', 'Kuopio',
-  'Jyväskylä', 'Lahti', 'Pori', 'Kouvola', 'Joensuu', 'Lappeenranta',
-  'Hämeenlinna', 'Vaasa', 'Seinäjoki', 'Rovaniemi', 'Mikkeli', 'Savonlinna'
-];
 
 export default function RegisterViewModel() {
   const navigation = useNavigation<any>();
@@ -33,48 +29,29 @@ export default function RegisterViewModel() {
     city.toLowerCase().includes(cityQuery.trim().toLowerCase())
   );
   const handleRegister = async () => {
+    const ageNum = parseInt(age);
     try {
       setError('');
+      if (!name || !email || !age|| !password || !gender || !location) {
+        setError('Fill all required fields.');
+        return;
+      }
+      if (ageNum < 18 || ageNum > 70) {
+        Alert.alert('Age must be between 18 and 70.');
+        return;
+      }
       if (password !== confirmPassword) {
         setError('Passwords do not match.');
         return;
       }
-      if (!name || !email || !password) {
-        setError('Fill all required fields.');
+      if (selectedSports.length === 0) {
+        Alert.alert('Choose at least one sport.');
         return;
       }
-      await register(name, email, password);
+      await register(name, email, ageNum, gender, location, password, bio);
       setModalVisible(true);
     } catch (err: any) {
       setError(err.message);
-    }
-  };
-
-  const handleProfile = async () => {
-    const ageNum = parseInt(age);
-    if (!age || !gender || !location || selectedSports.length === 0) {
-      Alert.alert('Fill in all required profile fields and choose at least one sport.');
-      return;
-    }
-    if (ageNum < 18 || ageNum > 70) {
-      Alert.alert('Age must be between 18 and 70.');
-      return;
-    }
-    try {
-      if (user?.uid) {
-        await updateDoc(doc(db, 'users', user.uid), {
-          age: ageNum,
-          gender: gender,
-          location: location,
-          bio: bio,
-          sports: selectedSports,
-        });
-        Alert.alert('Profile updated!');
-        setModalVisible(false);
-        navigation.navigate('Home');
-      }
-    } catch (err: any) {
-      Alert.alert(err.message);
     }
   };
 
@@ -119,7 +96,6 @@ export default function RegisterViewModel() {
       onToggleSport={toggleSport}
       onRegister={handleRegister}
       onNavigateToLogin={() => navigation.navigate('Login')}
-      onCompleteProfile={handleProfile}
       showGenderDropdown={showGenderDropdown}
       showLocationDropdown={showLocationDropdown}
       onToggleGenderDropdown={() => setShowGenderDropdown(!showGenderDropdown)}

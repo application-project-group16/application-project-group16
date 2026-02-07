@@ -7,7 +7,7 @@ import { User } from '../Models/User';
 type AuthContextType = {
     user: User | null;
     login: (email: string, password: string) => void;
-    register: (name: string, email: string, password: string) => void;
+    register: (name: string, email: string, age: number, gender: string, location: string, password: string, bio?: string | null) => void;
     logout: () => void;
 };
 
@@ -42,13 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Testi käytäjän rekisteröinti
-    const register = async (name: string, email: string, password: string) => {
+    const register = async (name: string, email: string, age: number, gender: string, location: string, password: string, bio?: string) => {
         const credentials = await createUserWithEmailAndPassword(auth, email, password);
         const newUser: User = {
             uid: credentials.user.uid,
             name: name,
             email: email,
+            age: age,
+            gender: gender,
+            location: location,
+            bio: bio,
             createdAt: new Date(),
+            sports: []
         };
         await setDoc(doc(db, 'users', credentials.user.uid), newUser);
     };
