@@ -7,17 +7,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SportPlacesViewModel from '../screens/NearestSportPlaces/SportPlaces/SportPlacesViewModel';
 import SportPlacesInfoViewModel from '../screens/NearestSportPlaces/SportPlacesInfo/SportPlacesInfoViewModel';
-import SwipeScreen from '../screens/swipe/SwipeScreen';
+import SwipeView from '../screens/swipe/SwipeView';
 import type { MainTabParamList } from '../Models/navigation'
 import LoginViewModel from '../screens/login/LoginViewModel';
 import RegisterViewModel from '../screens/login/RegisterViewModel';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import SettingsViewModel from '../screens/settings/SettingsViewModel';
+import { ActivityIndicator } from 'react-native';
+import MyProfileView from '../screens/profile/MyProfileView';
+import ProfileView from '../screens/profile/SwipeProfileView';
+import ChatPage from '../screens/FriendList/FriendChat/chatPage';
 import { gradients } from '../Models/Gradient';
 import { Text } from 'react-native';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
+const RootStack = createStackNavigator();
 
 function AppHeader() {
   return (
@@ -50,8 +55,42 @@ function SportPlacesStack() {
   );
 }
 
+function ProfileStack() {
+  return (
+    <Stack.Navigator id="ProfileStack">
+      <Stack.Screen
+        name="ProfileMain"
+        component={MyProfileView}        
+        options={{ title: 'Profile' }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsViewModel}
+        options={{ title: 'Settings' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function MainTabs() {
+  const { user } = useAuth()
+
+  return (
+    <Tab.Navigator id="MainTabs">
+      <Tab.Screen name="Swipe" component={SwipeView} />
+      <Tab.Screen name="SportPlaces" component={SportPlacesStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
+      <Tab.Screen name="FriendList" component={ChatPage} />
+    </Tab.Navigator>
+  )
+}
+
 function RootNavigator() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <ActivityIndicator size="large" style={{ flex: 1 }} />
+  }
 
   if (!user) {
     return (
@@ -72,50 +111,22 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
-      <View style={{ flex: 1 }}>
-        <AppHeader />
-        <Tab.Navigator 
-          id="MainTab"
-          screenOptions={{
-            headerShown: false,
-            tabBarStyle: {
-              borderTopWidth: 1,
-              borderTopColor: '#e0e0e0',
-            },
-          }}
-        >
-          <Tab.Screen 
-            name="Swipe" 
-            component={SwipeScreen}
-            options={{
-              tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="cards-heart" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tab.Screen 
-            name="SportPlaces" 
-            component={SportPlacesStack}
-            options={{
-              tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="map-marker" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tab.Screen 
-            name="Settings" 
-            component={SettingsViewModel}
-            options={{
-              tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="cog" color={color} size={size} />
-              ),
-            }}
-          />
-        </Tab.Navigator>
-      </View>
+      <RootStack.Navigator id="RootStack">
+        <RootStack.Screen
+          name="MainTabs"
+          component={MainTabs}
+          options={{ headerShown: false }}
+        />
+        <RootStack.Screen
+          name="ProfileView"
+          component={ProfileView}
+          options={{ title: 'Profile' }}
+        />
+     </RootStack.Navigator>
     </NavigationContainer>
-  );
+  )
 }
+
 
 export default function App() {
   return (

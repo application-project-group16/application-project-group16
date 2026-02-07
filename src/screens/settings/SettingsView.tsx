@@ -9,17 +9,19 @@ const availableSports = AVAILABLE_SPORTS;
 
 interface SettingsViewProps {
   name: string;
-  age: string;
+  age: number;
   bio: string;
+  city: string;
   selectedSports: string[];
-  profileImage: string | null;
+  image: string | null;
   showImageOptions: boolean;
   showPasswordModal: boolean;
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
   onNameChange: (name: string) => void;
-  onAgeChange: (age: string) => void;
+  onAgeChange: (age: number) => void;
+  onCityChange: (city: string) => void;
   onBioChange: (bio: string) => void;
   onToggleSport: (sport: string) => void;
   onShowImageOptions: () => void;
@@ -40,8 +42,9 @@ export default function SettingsView({
   name,
   age,
   bio,
+  city,
   selectedSports,
-  profileImage,
+  image,
   showImageOptions,
   showPasswordModal,
   currentPassword,
@@ -49,6 +52,7 @@ export default function SettingsView({
   confirmPassword,
   onNameChange,
   onAgeChange,
+  onCityChange,
   onBioChange,
   onToggleSport,
   onShowImageOptions,

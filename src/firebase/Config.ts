@@ -31,6 +31,13 @@ export {
   doc,
   arrayUnion,
   getDoc,
-  setDoc
+  setDoc,
+  addDoc,
+  arrayRemove,
+  where,
+  query,
+  onSnapshot,
+  orderBy,
+  serverTimestamp,
 } from 'firebase/firestore'
 

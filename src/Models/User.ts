@@ -1,22 +1,25 @@
+
 export interface User {
-    uid: string;
-    name: string;
-    email: string;
-    age: number;
-    gender: string;
-    location: string;
-    sports: string[];
-    bio: string;
-    image?: string;
-    createdAt: Date;
+  uid: string;
+  name: string;
+  email: string;
+  age: number;
+  gender: string;
+  location: string;
+  sports: string[];
+  bio: string;
+  image?: string;
+  likedUsers?: string[];
+  city: string;
+  createdAt: Date;
 }
 
-export interface UserProfile {
+export interface Friend {
+  uid: string
   name: string
-  age: number
-  sports: string[]
   image?: string
-  likedUsers?: string[]
+  age?: number
+  sports?: string[]
 }
 
 export interface Match {
