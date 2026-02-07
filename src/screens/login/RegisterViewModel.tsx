@@ -28,7 +28,10 @@ export default function RegisterViewModel() {
   const [error, setError] = useState('');
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-
+  const [cityQuery, setCityQuery] = useState('');
+  const filteredCities = FINLAND_CITIES.filter(city =>
+    city.toLowerCase().includes(cityQuery.trim().toLowerCase())
+  );
   const handleRegister = async () => {
     try {
       setError('');
@@ -96,7 +99,9 @@ export default function RegisterViewModel() {
       selectedSports={selectedSports}
       modalVisible={modalVisible}
       error={error}
-      finnlandCities={FINLAND_CITIES}
+      finlandCities={filteredCities}
+      cityQuery={cityQuery}
+      onCityQueryChange={setCityQuery}
       onNameChange={setName}
       onEmailChange={setEmail}
       onPasswordChange={setPassword}

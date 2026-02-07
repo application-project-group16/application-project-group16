@@ -18,7 +18,9 @@ interface RegisterViewProps {
   selectedSports: string[];
   modalVisible: boolean;
   error: string;
-  finnlandCities: string[];
+  finlandCities: string[];
+  cityQuery: string;
+  onCityQueryChange: (query: string) => void;
   onNameChange: (name: string) => void;
   onEmailChange: (email: string) => void;
   onPasswordChange: (password: string) => void;
@@ -49,7 +51,9 @@ export default function RegisterView({
   selectedSports,
   modalVisible,
   error,
-  finnlandCities,
+  finlandCities,
+  cityQuery,
+  onCityQueryChange,
   onNameChange,
   onEmailChange,
   onAgeChange,
@@ -158,21 +162,35 @@ export default function RegisterView({
           </View>
 
           <View style={[styles.dropdownContainer, showLocationDropdown && styles.dropdownContainerActive]}>
-            <TouchableOpacity 
-              style={styles.inputContainer}
-              onPress={() => onToggleLocationDropdown()}
-            >
+            <View style={styles.inputContainer}>
               <MaterialCommunityIcons name="map-marker" size={18} color="#666" style={styles.inputIcon} />
-              <Text style={[styles.input, { color: location ? '#333' : '#ccc' }]}>
-                {location || 'Select City'}
-              </Text>
-              <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
-            </TouchableOpacity>
+              {!showLocationDropdown ? (
+                <>
+                  <Text style={[styles.input, { color: location ? '#333' : '#ccc', flex: 1 }]}>
+                    {location || 'Select City'}
+                  </Text>
+                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                </>
+              ) : (
+                <TextInput
+                  placeholder="Search city..."
+                  value={cityQuery}
+                  onChangeText={onCityQueryChange}
+                  style={[styles.input, { flex: 1 }]}
+                  placeholderTextColor="#999"
+                  autoFocus
+                />
+              )}
+            </View>
 
             {showLocationDropdown && (
               <View style={styles.dropdownMenu}>
-                <ScrollView nestedScrollEnabled style={{ maxHeight: 150 }}>
-                  {finnlandCities.map(city => (
+                <ScrollView
+                  nestedScrollEnabled
+                  keyboardShouldPersistTaps="handled"
+                  style={{ maxHeight: 150 }}
+                >
+                  {finlandCities.map(city => (
                     <TouchableOpacity
                       key={city}
                       style={styles.dropdownOption}
@@ -188,7 +206,6 @@ export default function RegisterView({
               </View>
             )}
           </View>
-
           <Text style={styles.sectionLabel}>Select Your Sports</Text>
 
           <View style={styles.sportsContainer}>
@@ -436,5 +453,14 @@ const styles = StyleSheet.create({
   dropdownOptionText: {
     fontSize: 16,
     color: '#333',
+  },
+  dropdownSearch: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#333',
+    backgroundColor: '#fff',
   },
 });
