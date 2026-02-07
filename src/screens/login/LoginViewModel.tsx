@@ -9,6 +9,7 @@ export default function LoginViewModel() {
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigation = useNavigation<any>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -16,9 +17,12 @@ export default function LoginViewModel() {
         Alert.alert("Fill both email and password.");
         return;
       }
+      setIsLoading(true);
       await login(email, password);
     } catch (err) {
       Alert.alert("Login failed. Please check your password or email.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -34,6 +38,7 @@ export default function LoginViewModel() {
       onPasswordChange={setPassword}
       onLogin={handleLogin}
       onNavigateToRegister={handleNavigateToRegister}
+      isLoading={isLoading}
     />
   );
 }

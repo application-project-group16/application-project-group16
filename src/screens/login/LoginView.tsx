@@ -10,6 +10,7 @@ interface LoginViewProps {
   onPasswordChange: (password: string) => void;
   onLogin: () => void;
   onNavigateToRegister: () => void;
+  isLoading?: boolean;
 }
 
 export default function LoginView({
@@ -19,13 +20,14 @@ export default function LoginView({
   onPasswordChange,
   onLogin,
   onNavigateToRegister,
+  isLoading = false,
 }: LoginViewProps) {
   return (
     <LinearGradient colors={gradients.authBackground} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
         <View style={styles.card}>
-          
+
           <Text style={styles.logo}>
             <MaterialCommunityIcons name="dumbbell" size={28} color="#FF6B35" /> Sport Buddies
           </Text>
@@ -37,13 +39,13 @@ export default function LoginView({
               end={{ x: 1, y: 1 }}
               style={styles.loginTab}
             >
-              <TouchableOpacity>
-              <Text style={styles.activeTabText}>Login</Text>
+              <TouchableOpacity style={styles.tabInner}>
+                <Text style={styles.activeTabText}>Login</Text>
               </TouchableOpacity>
             </LinearGradient>
 
-            <TouchableOpacity style={styles.signUpTab}>
-              <Text style={styles.inactiveTabText} onPress={onNavigateToRegister}>Sign Up</Text>
+            <TouchableOpacity style={styles.signUpTab} onPress={onNavigateToRegister}>
+              <Text style={styles.inactiveTabText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
 
@@ -71,11 +73,20 @@ export default function LoginView({
             />
           </View>
           <LinearGradient
-            colors={['#FF6B35', '#FF1744']}
+            colors={isLoading ? ['#ccc', '#999'] : ['#FF6B35', '#FF1744']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.loginButton}
-          ><Text style={styles.loginButtonText} onPress={onLogin}>Login</Text></LinearGradient>
+          >
+            <TouchableOpacity 
+              onPress={onLogin} 
+              style={styles.loginButtonInner}
+              disabled={isLoading}
+              activeOpacity={isLoading ? 1 : 0.7}
+            >
+              <Text style={styles.loginButtonText}>{isLoading ? 'Logging in...' : 'Login'}</Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </ScrollView>
     </LinearGradient>
@@ -118,16 +129,18 @@ const styles = StyleSheet.create({
   },
   loginTab: {
     flex: 1,
-    backgroundColor: '#FF6B35',
-    paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    overflow: 'hidden',
   },
   signUpTab: {
     flex: 1,
     backgroundColor: '#f0f0f0',
-    paddingVertical: 12,
     borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabInner: {
+    paddingVertical: 12,
     alignItems: 'center',
   },
   activeTabText: {
@@ -161,12 +174,16 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   loginButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
     marginTop: 8,
-    marginBottom: 16,
+    marginBottom: 6,
+    overflow: 'hidden',
+  },
+  loginButtonInner: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loginButtonText: {
     color: '#fff',

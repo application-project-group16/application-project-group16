@@ -37,7 +37,7 @@ export default function RegisterViewModel() {
         return;
       }
       if (ageNum < 18 || ageNum > 70) {
-        Alert.alert('Age must be between 18 and 70.');
+        setError('Age must be between 18 and 70.');
         return;
       }
       if (password !== confirmPassword) {
@@ -45,7 +45,7 @@ export default function RegisterViewModel() {
         return;
       }
       if (selectedSports.length === 0) {
-        Alert.alert('Choose at least one sport.');
+        setError('Choose at least one sport.');
         return;
       }
       await register(name, email, ageNum, gender, location, password, bio);

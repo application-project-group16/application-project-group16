@@ -35,7 +35,7 @@ export default function SettingsViewModel() {
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets[0].uri) {
       setProfileImage(result.assets[0].uri);
       setShowImageOptions(false);
     }
@@ -54,7 +54,7 @@ export default function SettingsViewModel() {
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets[0].uri) {
       setProfileImage(result.assets[0].uri);
       setShowImageOptions(false);
     }

@@ -216,7 +216,11 @@ const onSwipeComplete = async (direction: 'right' | 'left', idx: number) => {
           {...(isTop && canSwipe ? panResponder.panHandlers : {})}
         >
           <Image
-            source={{ uri: card.image ?? `https://picsum.photos/seed/${card.id}/300` }}
+            source={{ 
+              uri: card.image && card.image.trim() 
+                ? card.image 
+                : `https://picsum.photos/seed/${card.id}/300` 
+            }}
             style={styles.image}
           />
           <View style={styles.infoContainer}>
