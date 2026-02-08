@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { BarChart } from "react-native-chart-kit";
-import { TYPE_CONFIG, Gym } from "./SportPlacesInfoViewModel";
+import { TYPE_CONFIG, Gym } from "../../../Models/SportPlaces";
 
 interface SportPlacesInfoViewProps {
   loading: boolean;

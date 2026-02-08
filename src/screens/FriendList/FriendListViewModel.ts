@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { UserProfile } from '../../Models/User';
+import { User } from '../../Models/User';
 import { db, collection, getDoc, doc, query, where, onSnapshot } from '../../firebase/Config';
 import { useAuth } from '../../context/AuthContext';
 
-interface Friend extends UserProfile {
+interface Friend extends User {
   uid: string;
 }
 
@@ -33,7 +33,7 @@ export const useFriendListViewModel = () => {
 
             return {
                 uid: friendUid,
-                ...(profileSnap.data() as UserProfile)
+                ...(profileSnap.data() as User)
             }
         })
 

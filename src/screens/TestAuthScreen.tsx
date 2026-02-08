@@ -9,7 +9,9 @@ export default function TestAuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const [age, setAge] = useState<number>(0);
+  const [gender, setGender] = useState("");
+  const [location, setLocation] = useState("");
 
   return (
     <View style={{ padding: 20 }}>
@@ -55,7 +57,7 @@ export default function TestAuthScreen() {
             onPress={async () => {
               try {
                 setError("");
-                await register(name, email, password);
+                await register(name, email, age, gender, location, password);
               } catch (e: any) {
                 setError(e.message);
               }

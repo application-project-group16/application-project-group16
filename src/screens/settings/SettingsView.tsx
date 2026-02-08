@@ -104,16 +104,23 @@ export default function SettingsView({
           placeholderTextColor="#ccc"
         />
 
+        <Text style={styles.label}>City</Text>
+        <TextInput
+          style={styles.input}
+          value={city}
+          onChangeText={onCityChange}
+          placeholder="Enter your city"
+        />
+
         <Text style={styles.sectionLabel}>
           <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
         </Text>
         <TextInput
           style={styles.input}
-          value={age}
-          onChangeText={onAgeChange}
+          value={age != null ? age.toString() : ''}
+          onChangeText={text => onAgeChange(text === '' ? null : Number(text))}
           placeholder="Enter your age"
           keyboardType="numeric"
-          placeholderTextColor="#ccc"
         />
 
         <Text style={styles.sectionLabel}>Your Sports</Text>
@@ -341,6 +348,11 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 15,
     marginBottom: 5,
+  },
+  label: { 
+    fontWeight: 'bold', 
+    marginTop: 16, 
+    marginBottom: 6 
   },
   input: {
     borderWidth: 1,
