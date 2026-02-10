@@ -13,7 +13,7 @@ interface RegisterViewProps {
   password: string;
   confirmPassword: string;
   gender: string;
-  location: string;
+  city: string;
   bio: string;
   selectedSports: string[];
   modalVisible: boolean;
@@ -31,11 +31,11 @@ interface RegisterViewProps {
   onRegister: () => void;
   onNavigateToLogin: () => void;
   showGenderDropdown: boolean;
-  showLocationDropdown: boolean;
+  showCityDropdown: boolean;
   onToggleGenderDropdown: () => void;
-  onToggleLocationDropdown: () => void;
+  onToggleCityDropdown: () => void;
   onGenderChange: (gender: string) => void;
-  onLocationChange: (location: string) => void;
+  onCityChange: (city: string) => void;
 }
 
 export default function RegisterView({
@@ -45,7 +45,7 @@ export default function RegisterView({
   password,
   confirmPassword,
   gender,
-  location,
+  city,
   bio,
   selectedSports,
   modalVisible,
@@ -63,16 +63,16 @@ export default function RegisterView({
   onRegister,
   onNavigateToLogin,
   showGenderDropdown,
-  showLocationDropdown,
+  showCityDropdown,
   onToggleGenderDropdown,
-  onToggleLocationDropdown,
+  onToggleCityDropdown,
   onGenderChange,
-  onLocationChange,
+  onCityChange,
 }: RegisterViewProps) {
 
   const closeAllDropdowns = () => {
     if (showGenderDropdown) onToggleGenderDropdown();
-    if (showLocationDropdown) onToggleLocationDropdown();
+    if (showCityDropdown) onToggleCityDropdown();
   };
 
   return (
@@ -151,7 +151,7 @@ export default function RegisterView({
                 <TouchableOpacity 
                   style={styles.inputContainer}
                   onPress={() => {
-                    if (showLocationDropdown) onToggleLocationDropdown();
+                    if (showCityDropdown) onToggleCityDropdown();
                     onToggleGenderDropdown();
                   }}
                 >
@@ -180,19 +180,19 @@ export default function RegisterView({
                 )}
               </View>
               
-              <View style={[styles.dropdownContainer, showLocationDropdown && styles.dropdownContainerActive]}>
+              <View style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}>
                 <TouchableOpacity
                   style={styles.inputContainer}
                   onPress={() => {
                     if (showGenderDropdown) onToggleGenderDropdown();
-                    onToggleLocationDropdown();
+                    onToggleCityDropdown();
                   }}
                 >
                   <MaterialCommunityIcons name="map-marker" size={18} color="#666" style={styles.inputIcon} />
-                  {!showLocationDropdown ? (
+                  {!showCityDropdown ? (
                     <>
-                      <Text style={[styles.input, { color: location ? '#333' : '#ccc', flex: 1 }]}>
-                        {location || 'Select City'}
+                      <Text style={[styles.input, { color: city ? '#333' : '#ccc', flex: 1 }]}>
+                        {city || 'Select City'}
                       </Text>
                       <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
                     </>
@@ -206,14 +206,14 @@ export default function RegisterView({
                         placeholderTextColor="#999"
                         autoFocus
                       />
-                      <TouchableOpacity onPress={onToggleLocationDropdown}>
+                      <TouchableOpacity onPress={onToggleCityDropdown}>
                         <MaterialCommunityIcons name="close" size={18} color="#666" />
                       </TouchableOpacity>
                     </>
                   )}
                 </TouchableOpacity>
 
-                {showLocationDropdown && (
+                {showCityDropdown && (
                   <View style={styles.dropdownMenu}>
                     <ScrollView
                       nestedScrollEnabled
@@ -225,8 +225,8 @@ export default function RegisterView({
                           key={city}
                           style={styles.dropdownOption}
                           onPress={() => {
-                            onLocationChange(city);
-                            onToggleLocationDropdown();
+                            onCityChange(city);
+                            onToggleCityDropdown();
                           }}
                         >
                           <Text style={styles.dropdownOptionText}>{city}</Text>
