@@ -77,10 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await signOut(auth);
         setUser(null);
     }
-    
-    useEffect(() => {
-  signOut(auth)
-}, [])
 
     return (
         <AuthContext.Provider 
