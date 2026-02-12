@@ -2,7 +2,7 @@ import React from 'react'
 import { View,  Text,  StyleSheet,  Image,  ScrollView,  ActivityIndicator,  Dimensions } from 'react-native'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { useSwipeProfileViewModel } from './SwipeProfileViewModel'
-import { MainTabParamList } from '../../Models/navigation'
+import { MainTabParamList } from '../../../Models/navigation'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const IMAGE_SIZE = SCREEN_WIDTH * 0.6

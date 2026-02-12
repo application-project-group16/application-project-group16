@@ -1,4 +1,3 @@
-
 export interface User {
   uid: string;
   name: string;
@@ -11,6 +10,7 @@ export interface User {
   image?: string;
   likedUsers?: string[];
   city: string;
+  blockedUsers: string[];
   createdAt: Date;
 }
 

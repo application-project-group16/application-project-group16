@@ -1,21 +1,18 @@
 import { useEffect, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../../firebase/Config'
-import { useAuth } from '../../context/AuthContext'
+import { db } from '../../../firebase/Config'
 
-export const useMyProfileViewModel = () => {
-  const { user, loading: authLoading } = useAuth()
-
+export const useSwipeProfileViewModel = (userId: string) => {
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
 
     setLoading(true)
 
     const unsub = onSnapshot(
-      doc(db, 'users', user.uid),
+      doc(db, 'users', userId),
       docSnap => {
         setProfile(docSnap.exists() ? docSnap.data() : null)
         setLoading(false)
@@ -28,11 +25,9 @@ export const useMyProfileViewModel = () => {
     )
 
     return () => unsub()
-  }, [user])
+  }, [userId])
 
   return {
-    user,
-    authLoading,
     loading,
     profile,
   }
