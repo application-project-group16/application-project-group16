@@ -4,7 +4,6 @@ export interface User {
   email: string;
   age: number;
   gender: string;
-  location: string;
   sports: string[];
   bio: string;
   image?: string;

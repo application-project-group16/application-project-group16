@@ -16,14 +16,14 @@ export default function RegisterViewModel() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [gender, setGender] = useState('');
-  const [location, setLocation] = useState('');
+  const [city, setCity] = useState('');
   const [bio, setBio] = useState('');
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const { register, user } = useAuth();
   const [error, setError] = useState('');
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [cityQuery, setCityQuery] = useState('');
   const filteredCities = FINLAND_CITIES.filter(city =>
     city.toLowerCase().includes(cityQuery.trim().toLowerCase())
@@ -32,7 +32,7 @@ export default function RegisterViewModel() {
     const ageNum = parseInt(age);
     try {
       setError('');
-      if (!name || !email || !age|| !password || !gender || !location) {
+      if (!name || !email || !age|| !password || !gender || !city) {
         setError('Fill all required fields.');
         return;
       }
@@ -48,7 +48,7 @@ export default function RegisterViewModel() {
         setError('Choose at least one sport.');
         return;
       }
-      await register(name, email, ageNum, gender, location, password, bio);
+      await register(name, email, ageNum, gender, city, selectedSports, password, bio);
       setModalVisible(true);
     } catch (err: any) {
       setError(err.message);
@@ -71,7 +71,7 @@ export default function RegisterViewModel() {
       password={password}
       confirmPassword={confirmPassword}
       gender={gender}
-      location={location}
+      city={city}
       bio={bio}
       selectedSports={selectedSports}
       modalVisible={modalVisible}
@@ -88,18 +88,18 @@ export default function RegisterViewModel() {
         setGender(option);
         setShowGenderDropdown(false);
       }}
-      onLocationChange={(city) => {
-        setLocation(city);
-        setShowLocationDropdown(false);
+      onCityChange={(city) => {
+        setCity(city);
+        setShowCityDropdown(false);
       }}
       onBioChange={setBio}
       onToggleSport={toggleSport}
       onRegister={handleRegister}
       onNavigateToLogin={() => navigation.navigate('Login')}
       showGenderDropdown={showGenderDropdown}
-      showLocationDropdown={showLocationDropdown}
+      showCityDropdown={showCityDropdown}
       onToggleGenderDropdown={() => setShowGenderDropdown(!showGenderDropdown)}
-      onToggleLocationDropdown={() => setShowLocationDropdown(!showLocationDropdown)}
+      onToggleCityDropdown={() => setShowCityDropdown(!showCityDropdown)}
     />
   );
 }
