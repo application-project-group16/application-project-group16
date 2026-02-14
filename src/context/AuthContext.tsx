@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             createdAt: new Date(),
             image: '',
             likedUsers: [],
+            blockedUsers: [],
         };
         await setDoc(doc(db, 'users', credentials.user.uid), newUser);
 

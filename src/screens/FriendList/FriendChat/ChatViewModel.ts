@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Message } from "../../../Models/Chat";
-import { collection, query, doc, updateDoc, onSnapshot, orderBy, serverTimestamp, addDoc, } from "firebase/firestore";
+import { collection, query, doc, updateDoc, onSnapshot, orderBy, serverTimestamp, addDoc } from "firebase/firestore";
 import { db } from "../../../firebase/Config";
 import { useAuth } from "../../../context/AuthContext";
-
+import { handleReportSubmit } from '../../../Services/Reports';
 
 export const useChatViewModel = (chatId: string) => {
     const { user } = useAuth();
@@ -49,6 +49,7 @@ export const useChatViewModel = (chatId: string) => {
         messages,
         sendMessage,
         currentUserUid,
+        handleReportSubmit,
     }
 
 }

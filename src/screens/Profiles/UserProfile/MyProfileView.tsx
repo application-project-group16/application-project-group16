@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIn
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { MainTabParamList } from '../../Models/navigation'
+import { MainTabParamList } from '../../../Models/navigation'
 import { useMyProfileViewModel } from './MyProfileViewModel'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
