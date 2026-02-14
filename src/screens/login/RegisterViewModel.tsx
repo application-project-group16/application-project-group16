@@ -1,9 +1,6 @@
-import { Alert } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
-import { doc, updateDoc } from '../../firebase/Config';
-import { db } from '../../firebase/Config';
 import RegisterView from './RegisterView';
 import { FINLAND_CITIES } from '../../Models/User';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, TouchableWithoutFeedback, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AVAILABLE_SPORTS } from '../../Models/User';
@@ -13,6 +13,7 @@ interface SettingsViewProps {
   age: number;
   bio: string;
   city: string;
+  cityQuery: string;
   selectedSports: string[];
   image: string | null;
   showImageOptions: boolean;
@@ -37,6 +38,10 @@ interface SettingsViewProps {
   onConfirmPasswordChange: (password: string) => void;
   onChangePassword: () => void;
   onLogout: () => void;
+  showCityDropdown: boolean;
+  onCityQueryChange: (query: string) => void;
+  onToggleCityDropdown: () => void;
+  finlandCities: string[];
 }
 
 export default function SettingsView({
@@ -68,9 +73,32 @@ export default function SettingsView({
   onConfirmPasswordChange,
   onChangePassword,
   onLogout,
+  showCityDropdown,
+  onToggleCityDropdown,
+  cityQuery,
+  onCityQueryChange,
+  finlandCities
 }: SettingsViewProps) {
   const navigation = useNavigation();
-  
+  const closeAllDropdowns = () => {
+    if (showCityDropdown) onToggleCityDropdown();
+  };
+
+  const cityInputRef = useRef<View>(null);
+  const [cityInputLayout, setCityInputLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+  const handleToggleCityDropdown = () => {
+    if (showCityDropdown) {
+      onToggleCityDropdown();
+      return;
+    }
+
+    cityInputRef.current?.measureInWindow((x, y, width, height) => {
+      setCityInputLayout({ x, y, width, height });
+      onToggleCityDropdown();
+    });
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity 
@@ -104,13 +132,43 @@ export default function SettingsView({
           placeholderTextColor="#ccc"
         />
 
-        <Text style={styles.label}>City</Text>
-        <TextInput
-          style={styles.input}
-          value={city}
-          onChangeText={onCityChange}
-          placeholder="Enter your city"
-        />
+        <Text style={styles.sectionLabel}>
+          <MaterialCommunityIcons name="account" size={18} color={colors.text} /> City
+        </Text>
+
+        <View
+          ref={cityInputRef}
+          style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}
+        >
+          <TouchableOpacity
+            style={styles.inputContainer}
+            onPress={handleToggleCityDropdown}
+          >
+            <MaterialCommunityIcons name="map-marker" size={18} color="#666" style={styles.inputIcon} />
+            {!showCityDropdown ? (
+              <>
+                <Text style={[styles.input, { color: city ? '#333' : '#ccc', flex: 1 }]}>
+                  {city || 'Select City'}
+                </Text>
+                <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+              </>
+            ) : (
+              <>
+                <TextInput
+                  placeholder="Search city..."
+                  value={cityQuery}
+                  onChangeText={onCityQueryChange}
+                  style={[styles.input, { flex: 1 }]}
+                  placeholderTextColor="#999"
+                  autoFocus
+                />
+                <TouchableOpacity onPress={handleToggleCityDropdown}>
+                  <MaterialCommunityIcons name="close" size={18} color="#666" />
+                </TouchableOpacity>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.sectionLabel}>
           <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
@@ -195,6 +253,47 @@ export default function SettingsView({
           </TouchableOpacity>
         </LinearGradient>
       </ScrollView>
+
+      <Modal visible={showCityDropdown} transparent animationType="fade" onRequestClose={handleToggleCityDropdown}>
+        <TouchableWithoutFeedback onPress={handleToggleCityDropdown}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View
+                style={[
+                  styles.dropdownOverlay,
+                  {
+                    top: cityInputLayout.y + cityInputLayout.height,
+                    left: cityInputLayout.x,
+                    width: cityInputLayout.width,
+                  },
+                ]}
+              >
+                <ScrollView
+                  style={styles.dropdownMenuAbsolute}
+                  nestedScrollEnabled
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator
+                >
+                  {finlandCities.map(cityOption => (
+                    <TouchableOpacity
+                      key={cityOption}
+                      style={styles.dropdownOption}
+                      onPress={() => {
+                        onCityChange(cityOption);
+                        handleToggleCityDropdown();
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
       <Modal
         visible={showImageOptions}
         transparent
@@ -202,30 +301,30 @@ export default function SettingsView({
         onRequestClose={onHideImageOptions}
       >
         <TouchableWithoutFeedback onPress={onHideImageOptions}>
-          <View style={styles.modalOverlay}>
-        <TouchableWithoutFeedback>
-          <View style={styles.imageOptionsContainer}>
-            <TouchableOpacity 
-              style={styles.imageOption}
-              onPress={onPickFromCamera}
-            >
-              <View style={styles.imageOptionContent}>
-                <MaterialCommunityIcons name="camera" size={20} color="#333" style={styles.imageOptionIcon} />
-                <Text style={styles.imageOptionText}>Take Photo</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.imageOption}
-              onPress={onPickFromGallery}
-            >
-              <View style={styles.imageOptionContent}>
-                <MaterialCommunityIcons name="image" size={20} color="#333" style={styles.imageOptionIcon} />
-                <Text style={styles.imageOptionText}>Choose from Gallery</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-          </View>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.imageOptionsContainer}>
+                  <TouchableOpacity 
+                    style={styles.imageOption}
+                    onPress={onPickFromCamera}
+                  >
+                    <View style={styles.imageOptionContent}>
+                      <MaterialCommunityIcons name="camera" size={20} color="#333" style={styles.imageOptionIcon} />
+                      <Text style={styles.imageOptionText}>Take Photo</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.imageOption}
+                    onPress={onPickFromGallery}
+                  >
+                    <View style={styles.imageOptionContent}>
+                      <MaterialCommunityIcons name="image" size={20} color="#333" style={styles.imageOptionIcon} />
+                      <Text style={styles.imageOptionText}>Choose from Gallery</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
         </TouchableWithoutFeedback>
       </Modal>
 
@@ -501,5 +600,53 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FF6B35',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    left: 42,
+    right: 42,
+    elevation: 10,
+    marginTop: 4,
+  },
+  dropdownMenuAbsolute: {
+    maxHeight: 200,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderTopWidth: 0, 
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  dropdownContainer: {
+    position: 'relative',
+    marginBottom: 1,
+    zIndex: 1,
+  },
+  dropdownContainerActive: {
+    zIndex: 50,
+  },
+  dropdownOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: '#fafafa',
+  },
+  inputIcon: {
+    fontSize: 18,
+    marginRight: 10,
   },
 });

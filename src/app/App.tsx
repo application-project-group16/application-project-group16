@@ -17,6 +17,7 @@ import { ActivityIndicator } from 'react-native';
 import MyProfileView from '../screens/profile/MyProfileView';
 import ProfileView from '../screens/profile/SwipeProfileView';
 import ChatPage from '../screens/FriendList/FriendChat/chatPage';
+import UserStatisticsViewModel from '../screens/UserStatistics/UserStatisticsViewModel';
 import { gradients } from '../Models/Gradient';
 import { Text } from 'react-native';
 
@@ -106,8 +107,18 @@ function MainTabs() {
         }}
       />
       <Tab.Screen 
-        name="Profile" 
-        component={ProfileStack}
+        name="FriendList" 
+        component={ChatPage}
+        options={{
+          tabBarLabel: '',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="chat" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen 
+        name="UserStatistics" 
+        component={UserStatisticsViewModel}
         options={{
           headerShown: false,
           tabBarLabel: '',
@@ -117,12 +128,13 @@ function MainTabs() {
         }}
       />
       <Tab.Screen 
-        name="FriendList" 
-        component={ChatPage}
+        name="Profile" 
+        component={ProfileStack}
         options={{
+          headerShown: false,
           tabBarLabel: '',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chat" color={color} size={size} />
+            <MaterialCommunityIcons name="account" color={color} size={size} />
           ),
         }}
       />

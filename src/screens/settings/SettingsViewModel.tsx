@@ -8,6 +8,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/Config';
 import SettingsView from './SettingsView';
 import { useAuth } from '../../context/AuthContext';
+import { FINLAND_CITIES } from '../../Models/User';
 
 const CLOUDINARY_CLOUD_NAME = 'dkud50kcl';
 const CLOUDINARY_UPLOAD_PRESET = 'e9kg78jq';
@@ -26,6 +27,11 @@ export default function SettingsViewModel() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [cityQuery, setCityQuery] = useState('');
+  const filteredCities = FINLAND_CITIES.filter(city =>
+    city.toLowerCase().includes(cityQuery.trim().toLowerCase())
+  );
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -216,6 +222,8 @@ export default function SettingsViewModel() {
       name={name}
       age={age}
       city={city}
+      cityQuery={cityQuery}
+      onCityQueryChange={setCityQuery}
       bio={bio}
       selectedSports={selectedSports}
       image={image}
@@ -226,7 +234,10 @@ export default function SettingsViewModel() {
       confirmPassword={confirmPassword}
       onNameChange={setName}
       onAgeChange={setAge}
-      onCityChange={setCity}
+      onCityChange={(city) => {
+        setCity(city);
+        setShowCityDropdown(false);
+      }}
       onBioChange={setBio}
       onToggleSport={toggleSport}
       onShowImageOptions={() => setShowImageOptions(true)}
@@ -246,6 +257,9 @@ export default function SettingsViewModel() {
       onConfirmPasswordChange={setConfirmPassword}
       onChangePassword={handleChangePassword}
       onLogout={handleLogout}
+      showCityDropdown={showCityDropdown}
+      onToggleCityDropdown={() => setShowCityDropdown(!showCityDropdown)}
+      finlandCities={filteredCities}
     />
   );
 }
