@@ -11,12 +11,16 @@ export default function UserStatisticsViewModel() {
   const [loading, setLoading] = useState(true)
   const [counts, setCounts] = useState<number[]>([])
   const [totalFriends, setTotalFriends] = useState(0)
+  const [cityLabels, setCityLabels] = useState<string[]>([])
+  const [cityData, setCityData] = useState<number[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
       if (!currentUserUid) {
         setCounts(AVAILABLE_SPORTS.map(() => 0))
         setTotalFriends(0)
+        setCityLabels([])
+        setCityData([])
         setLoading(false)
         return
       }
@@ -26,6 +30,7 @@ export default function UserStatisticsViewModel() {
       const countsMap: Record<string, number> = Object.fromEntries(
         AVAILABLE_SPORTS.map(s => [s, 0])
       )
+      const cityCountsMap: Record<string, number> = {}
 
       try {
         const matchesSnap = await getDocs(
@@ -52,13 +57,26 @@ export default function UserStatisticsViewModel() {
           sports.forEach(s => {
             if (countsMap[s] !== undefined) countsMap[s] += 1
           })
+
+          if (data.city) {
+            cityCountsMap[data.city] = (cityCountsMap[data.city] || 0) + 1
+          }
         })
 
         setCounts(AVAILABLE_SPORTS.map(s => countsMap[s] ?? 0))
+
+        const sortedCities = Object.entries(cityCountsMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 7) 
+
+        setCityLabels(sortedCities.map(([city]) => city))
+        setCityData(sortedCities.map(([_, count]) => count))
       } catch (err) {
         console.error('Failed to load user statistics', err)
         setCounts(AVAILABLE_SPORTS.map(() => 0))
         setTotalFriends(0)
+        setCityLabels([])
+        setCityData([])
       } finally {
         setLoading(false)
       }
@@ -73,6 +91,8 @@ export default function UserStatisticsViewModel() {
       labels={AVAILABLE_SPORTS}
       data={counts}
       totalFriends={totalFriends}
+      cityLabels={cityLabels}
+      cityData={cityData}
     />
   )
 }
