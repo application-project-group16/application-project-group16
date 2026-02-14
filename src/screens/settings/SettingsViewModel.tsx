@@ -18,6 +18,7 @@ export default function SettingsViewModel() {
   const { logout, user } = useAuth();
   const [name, setName] = useState('');
   const [age, setAge] = useState<number | null>(null);
+  const [gender, setGender] = useState('');
   const [city, setCity] = useState('');
   const [bio, setBio] = useState('');
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
@@ -32,6 +33,7 @@ export default function SettingsViewModel() {
   const filteredCities = FINLAND_CITIES.filter(city =>
     city.toLowerCase().includes(cityQuery.trim().toLowerCase())
   );
+  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -143,14 +145,14 @@ export default function SettingsViewModel() {
 
     try {
       await setDoc(doc(db, 'users', user.uid), {
-        name, age, city, bio, sports: selectedSports, image, updatedAt: new Date(),
+        name, age, gender, city, bio, sports: selectedSports, image, updatedAt: new Date(),
       },
       { merge: true }
     );
 
-      Alert.alert('Saved!', `Name: ${name}\nAge: ${age}\nCity: ${city}\nBio: ${bio}\nSports: ${selectedSports.join(', ')}`);
-    } catch {
-      Alert.alert('Error', 'Saving failed');
+      Alert.alert('Saved!', `Name: ${name}\nAge: ${age}\nGender: ${gender}\nCity: ${city}\nBio: ${bio}\nSports: ${selectedSports.join(', ')}`);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Saving failed');
     }
   };
 
@@ -217,6 +219,15 @@ export default function SettingsViewModel() {
     );
   };
 
+
+  const onToggleGenderDropdown = () => {
+    setShowGenderDropdown(!showGenderDropdown);
+  };
+
+  const onGenderChange = (gender: string) => {
+    setGender(gender);
+  };
+
   return (
     <SettingsView
       name={name}
@@ -227,6 +238,7 @@ export default function SettingsViewModel() {
       bio={bio}
       selectedSports={selectedSports}
       image={image}
+      gender={gender}
       showImageOptions={showImageOptions}
       showPasswordModal={showPasswordModal}
       currentPassword={currentPassword}
@@ -260,6 +272,9 @@ export default function SettingsViewModel() {
       showCityDropdown={showCityDropdown}
       onToggleCityDropdown={() => setShowCityDropdown(!showCityDropdown)}
       finlandCities={filteredCities}
+      showGenderDropdown={showGenderDropdown}
+      onToggleGenderDropdown={onToggleGenderDropdown}
+      onGenderChange={onGenderChange}
     />
   );
 }

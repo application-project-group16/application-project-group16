@@ -16,6 +16,7 @@ interface SettingsViewProps {
   cityQuery: string;
   selectedSports: string[];
   image: string | null;
+  gender: string;
   showImageOptions: boolean;
   showPasswordModal: boolean;
   currentPassword: string;
@@ -42,6 +43,9 @@ interface SettingsViewProps {
   onCityQueryChange: (query: string) => void;
   onToggleCityDropdown: () => void;
   finlandCities: string[];
+  showGenderDropdown: boolean;
+  onToggleGenderDropdown: () => void;
+  onGenderChange: (gender: string) => void;
 }
 
 export default function SettingsView({
@@ -49,6 +53,7 @@ export default function SettingsView({
   age,
   bio,
   city,
+  gender,
   selectedSports,
   image,
   showImageOptions,
@@ -58,7 +63,6 @@ export default function SettingsView({
   confirmPassword,
   onNameChange,
   onAgeChange,
-  onCityChange,
   onBioChange,
   onToggleSport,
   onShowImageOptions,
@@ -75,28 +79,24 @@ export default function SettingsView({
   onLogout,
   showCityDropdown,
   onToggleCityDropdown,
-  cityQuery,
-  onCityQueryChange,
-  finlandCities
+  finlandCities,
+  showGenderDropdown,
+  onToggleGenderDropdown,
+  onGenderChange,
+  onCityChange
 }: SettingsViewProps) {
+
   const navigation = useNavigation();
-  const closeAllDropdowns = () => {
-    if (showCityDropdown) onToggleCityDropdown();
-  };
 
-  const cityInputRef = useRef<View>(null);
-  const [cityInputLayout, setCityInputLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
-
-  const handleToggleCityDropdown = () => {
+  const closeDropdowns = () => {
     if (showCityDropdown) {
       onToggleCityDropdown();
       return;
     }
 
-    cityInputRef.current?.measureInWindow((x, y, width, height) => {
-      setCityInputLayout({ x, y, width, height });
-      onToggleCityDropdown();
-    });
+    if (showGenderDropdown) {
+      onToggleGenderDropdown();
+    } 
   };
 
   return (
@@ -108,191 +108,192 @@ export default function SettingsView({
         <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileTop}>
-          <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.profileImageTop} />
-            ) : (
-              <MaterialCommunityIcons name="account-circle" size={120} color="#FF6B35" />
-            )}
-            <View style={styles.editIconContainer}>
-              <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
+      <TouchableWithoutFeedback onPress={closeDropdowns}>
+        <View style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.profileTop}>
+              <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
+                {image ? (
+                  <Image source={{ uri: image }} style={styles.profileImageTop} />
+                ) : (
+                  <MaterialCommunityIcons name="account-circle" size={120} color="#FF6B35" />
+                )}
+                <View style={styles.editIconContainer}>
+                  <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
+                </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="account" size={18} color={colors.text} /> Name
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={onNameChange}
-          placeholder="Enter your name"
-          placeholderTextColor="#ccc"
-        />
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="account" size={18} color={colors.text} /> Name
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={onNameChange}
+              placeholder="Enter your name"
+              placeholderTextColor="#ccc"
+            />
 
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="account" size={18} color={colors.text} /> City
-        </Text>
 
-        <View
-          ref={cityInputRef}
-          style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}
-        >
-          <TouchableOpacity
-            style={styles.inputContainer}
-            onPress={handleToggleCityDropdown}
-          >
-            <MaterialCommunityIcons name="map-marker" size={18} color="#666" style={styles.inputIcon} />
-            {!showCityDropdown ? (
-              <>
-                <Text style={[styles.input, { color: city ? '#333' : '#ccc', flex: 1 }]}>
-                  {city || 'Select City'}
-                </Text>
-                <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
-              </>
-            ) : (
-              <>
-                <TextInput
-                  placeholder="Search city..."
-                  value={cityQuery}
-                  onChangeText={onCityQueryChange}
-                  style={[styles.input, { flex: 1 }]}
-                  placeholderTextColor="#999"
-                  autoFocus
-                />
-                <TouchableOpacity onPress={handleToggleCityDropdown}>
-                  <MaterialCommunityIcons name="close" size={18} color="#666" />
-                </TouchableOpacity>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="human" size={18} color={colors.text} /> Gender
+            </Text>
 
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={age != null ? age.toString() : ''}
-          onChangeText={text => onAgeChange(text === '' ? null : Number(text))}
-          placeholder="Enter your age"
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.sectionLabel}>Your Sports</Text>
-        <View style={styles.sportsContainer}>
-          {availableSports.map(sport => (
-            <TouchableOpacity
-              key={sport}
-              style={[
-                styles.sportChip,
-                selectedSports.includes(sport) && styles.sportChipSelected
-              ]}
-              onPress={() => onToggleSport(sport)}
-            >
-              <Text style={[
-                styles.sportChipText,
-                selectedSports.includes(sport) && styles.sportChipTextSelected
-              ]}>
-                {sport}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="message-text" size={18} color={colors.text} /> Bio
-        </Text>
-        <TextInput
-          style={[styles.input, styles.bioInput]}
-          value={bio}
-          onChangeText={onBioChange}
-          placeholder="Tell something about yourself..."
-          placeholderTextColor="#ccc"
-          multiline
-        />
-
-        <LinearGradient
-          colors={gradients.authBackground}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.saveButton}
-        >
-          <TouchableOpacity onPress={onSave} style={[styles.buttonInner, styles.buttonRow]}>
-            <MaterialCommunityIcons name="content-save" size={20} color="#fff" style={styles.buttonIconLeft} />
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <LinearGradient
-          colors={gradients.authBackground}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.changePasswordButton}
-        >
-          <TouchableOpacity 
-            style={[styles.buttonInner, styles.buttonRow]}
-            onPress={onShowPasswordModal}
-          >
-            <MaterialCommunityIcons name="lock-reset" size={20} color="#fff" style={styles.buttonIconLeft} />
-            <Text style={styles.changePasswordButtonText}>Change Password</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <LinearGradient
-          colors={['#d32f2f', '#c62828']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.logoutButton}
-        >
-          <TouchableOpacity onPress={onLogout} style={[styles.buttonInner, styles.buttonRow]}>
-            <MaterialCommunityIcons name="logout" size={20} color="#fff" style={styles.buttonIconLeft} />
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-      </ScrollView>
-
-      <Modal visible={showCityDropdown} transparent animationType="fade" onRequestClose={handleToggleCityDropdown}>
-        <TouchableWithoutFeedback onPress={handleToggleCityDropdown}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View
-                style={[
-                  styles.dropdownOverlay,
-                  {
-                    top: cityInputLayout.y + cityInputLayout.height,
-                    left: cityInputLayout.x,
-                    width: cityInputLayout.width,
-                  },
-                ]}
-              >
-                <ScrollView
-                  style={styles.dropdownMenuAbsolute}
-                  nestedScrollEnabled
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator
+              <View style={[styles.dropdownContainer, showGenderDropdown && styles.dropdownContainerActive]}>
+                <TouchableOpacity 
+                  style={styles.inputContainer}
+                  onPress={() => {
+                    if (showCityDropdown) onToggleCityDropdown();
+                    onToggleGenderDropdown();
+                  }}
                 >
-                  {finlandCities.map(cityOption => (
-                    <TouchableOpacity
-                      key={cityOption}
-                      style={styles.dropdownOption}
-                      onPress={() => {
-                        onCityChange(cityOption);
-                        handleToggleCityDropdown();
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.dropdownOptionText}>{cityOption}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                  <Text style={[styles.dropdownInput, { color: gender ? '#333' : '#ccc' }]}>
+                    {gender || 'Select Gender'}
+                  </Text>
+                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                </TouchableOpacity>
+
+                {showGenderDropdown && (
+                  <View style={styles.dropdownMenu}>
+                    {['Male', 'Female', 'Other'].map(option => (
+                      <TouchableOpacity
+                        key={option}
+                        style={styles.dropdownOption}
+                        onPress={() => {
+                          onGenderChange(option);
+                          onToggleGenderDropdown();
+                        }}
+                      >
+                        <Text style={styles.dropdownOptionText}>{option}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="map-marker" size={18} color={colors.text} /> City
+            </Text>
+
+              <View style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}>
+                <TouchableOpacity 
+                  style={styles.inputContainer}
+                  onPress={() => {
+                    if (showCityDropdown) onToggleCityDropdown();
+                    onToggleCityDropdown();
+                  }}
+                >
+                  <Text style={[styles.dropdownInput, { color: city ? '#333' : '#ccc' }]}>
+                    {city || 'Select City'}
+                  </Text>
+                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                </TouchableOpacity>
+
+                {showCityDropdown && (
+                  <View style={styles.dropdownMenu}>
+                    <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator>
+                      {finlandCities.map(city => (
+                        <TouchableOpacity
+                          key={city}
+                          style={styles.dropdownOption}
+                          onPress={() => {
+                            onCityChange(city);
+                            onToggleCityDropdown();
+                          }}
+                        >
+                          <Text style={styles.dropdownOptionText}>{city}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={age != null ? age.toString() : ''}
+              onChangeText={text => onAgeChange(text === '' ? null : Number(text))}
+              placeholder="Enter your age"
+              keyboardType="numeric"
+            />
+
+            <Text style={styles.sectionLabel}>Your Sports</Text>
+            <View style={styles.sportsContainer}>
+              {availableSports.map(sport => (
+                <TouchableOpacity
+                  key={sport}
+                  style={[
+                    styles.sportChip,
+                    selectedSports.includes(sport) && styles.sportChipSelected
+                  ]}
+                  onPress={() => onToggleSport(sport)}
+                >
+                  <Text style={[
+                    styles.sportChipText,
+                    selectedSports.includes(sport) && styles.sportChipTextSelected
+                  ]}>
+                    {sport}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="message-text" size={18} color={colors.text} /> Bio
+            </Text>
+            <TextInput
+              style={[styles.input, styles.bioInput]}
+              value={bio}
+              onChangeText={onBioChange}
+              placeholder="Tell something about yourself..."
+              placeholderTextColor="#ccc"
+              multiline
+            />
+
+            <LinearGradient
+              colors={gradients.authBackground}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.saveButton}
+            >
+              <TouchableOpacity onPress={onSave} style={[styles.buttonInner, styles.buttonRow]}>
+                <MaterialCommunityIcons name="content-save" size={20} color="#fff" style={styles.buttonIconLeft} />
+                <Text style={styles.saveButtonText}>Save Changes</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <LinearGradient
+              colors={gradients.authBackground}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.changePasswordButton}
+            >
+              <TouchableOpacity 
+                style={[styles.buttonInner, styles.buttonRow]}
+                onPress={onShowPasswordModal}
+              >
+                <MaterialCommunityIcons name="lock-reset" size={20} color="#fff" style={styles.buttonIconLeft} />
+                <Text style={styles.changePasswordButtonText}>Change Password</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <LinearGradient
+              colors={['#d32f2f', '#c62828']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoutButton}
+            >
+              <TouchableOpacity onPress={onLogout} style={[styles.buttonInner, styles.buttonRow]}>
+                <MaterialCommunityIcons name="logout" size={20} color="#fff" style={styles.buttonIconLeft} />
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </ScrollView>
+        </View>
+      </TouchableWithoutFeedback>
 
       <Modal
         visible={showImageOptions}
@@ -462,6 +463,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  dropdownInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#333',
+  },
   passwordInput: {
     marginTop: 7,
   },
@@ -603,9 +610,8 @@ const styles = StyleSheet.create({
   },
   dropdownOverlay: {
     position: 'absolute',
-    left: 42,
-    right: 42,
-    elevation: 10,
+    elevation: 20,
+    zIndex: 9999,
     marginTop: 4,
   },
   dropdownMenuAbsolute: {
@@ -648,5 +654,21 @@ const styles = StyleSheet.create({
   inputIcon: {
     fontSize: 18,
     marginRight: 10,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
   },
 });
