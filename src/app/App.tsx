@@ -123,7 +123,7 @@ function MainTabs() {
           headerShown: false,
           tabBarLabel: '',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account" color={color} size={size} />
+            <MaterialCommunityIcons name="chart-line" color={color} size={size} />
           ),
         }}
       />

@@ -13,6 +13,8 @@ export default function UserStatisticsViewModel() {
   const [totalFriends, setTotalFriends] = useState(0)
   const [cityLabels, setCityLabels] = useState<string[]>([])
   const [cityData, setCityData] = useState<number[]>([])
+  const [userGrowthLabels, setUserGrowthLabels] = useState<string[]>([])
+  const [userGrowthData, setUserGrowthData] = useState<number[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -21,6 +23,8 @@ export default function UserStatisticsViewModel() {
         setTotalFriends(0)
         setCityLabels([])
         setCityData([])
+        setUserGrowthLabels([])
+        setUserGrowthData([])
         setLoading(false)
         return
       }
@@ -31,6 +35,7 @@ export default function UserStatisticsViewModel() {
         AVAILABLE_SPORTS.map(s => [s, 0])
       )
       const cityCountsMap: Record<string, number> = {}
+      const userGrowthMap: Record<string, number> = {}
 
       try {
         const matchesSnap = await getDocs(
@@ -61,22 +66,68 @@ export default function UserStatisticsViewModel() {
           if (data.city) {
             cityCountsMap[data.city] = (cityCountsMap[data.city] || 0) + 1
           }
+
+          if (data.createdAt) {
+            let createdDate: Date
+            
+            if (data.createdAt instanceof Date) {
+              createdDate = data.createdAt
+            } else if (data.createdAt.toDate && typeof data.createdAt.toDate === 'function') {
+              createdDate = data.createdAt.toDate()
+            } else if (typeof data.createdAt === 'string') {
+              createdDate = new Date(data.createdAt)
+            } else if (typeof data.createdAt === 'number') {
+              createdDate = new Date(data.createdAt)
+            } else {
+              return 
+            }
+            
+            const dateKey = createdDate.toISOString().split('T')[0] 
+            userGrowthMap[dateKey] = (userGrowthMap[dateKey] || 0) + 1
+          }
         })
 
         setCounts(AVAILABLE_SPORTS.map(s => countsMap[s] ?? 0))
 
         const sortedCities = Object.entries(cityCountsMap)
           .sort((a, b) => b[1] - a[1])
-          .slice(0, 7) 
+          .slice(0, 7)
 
         setCityLabels(sortedCities.map(([city]) => city))
         setCityData(sortedCities.map(([_, count]) => count))
+
+        const today = new Date()
+        const thirtyDaysAgo = new Date(today)
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29) // 29 days ago to include today = 30 days
+
+        const dateRange: string[] = []
+        for (let i = 0; i < 30; i++) {
+          const date = new Date(thirtyDaysAgo)
+          date.setDate(date.getDate() + i)
+          dateRange.push(date.toISOString().split('T')[0])
+        }
+
+        // Build cumulative data for all 30 days
+        let cumulativeCount = 0
+        const cumulativeData = dateRange.map(dateStr => {
+          const count = userGrowthMap[dateStr] || 0
+          cumulativeCount += count
+          return cumulativeCount
+        })
+
+        setUserGrowthLabels(dateRange.map(dateStr => {
+          const d = new Date(dateStr)
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        }))
+        setUserGrowthData(cumulativeData)
       } catch (err) {
         console.error('Failed to load user statistics', err)
         setCounts(AVAILABLE_SPORTS.map(() => 0))
         setTotalFriends(0)
         setCityLabels([])
         setCityData([])
+        setUserGrowthLabels([])
+        setUserGrowthData([])
       } finally {
         setLoading(false)
       }
@@ -93,6 +144,8 @@ export default function UserStatisticsViewModel() {
       totalFriends={totalFriends}
       cityLabels={cityLabels}
       cityData={cityData}
+      userGrowthLabels={userGrowthLabels}
+      userGrowthData={userGrowthData}
     />
   )
 }
