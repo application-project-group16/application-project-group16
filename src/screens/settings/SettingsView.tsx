@@ -110,7 +110,11 @@ export default function SettingsView({
       </TouchableOpacity>
       <TouchableWithoutFeedback onPress={closeDropdowns}>
         <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            >
             <View style={styles.profileTop}>
               <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
                 {image ? (
@@ -190,21 +194,30 @@ export default function SettingsView({
                 </TouchableOpacity>
 
                 {showCityDropdown && (
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator>
-                      {finlandCities.map(city => (
-                        <TouchableOpacity
-                          key={city}
-                          style={styles.dropdownOption}
-                          onPress={() => {
-                            onCityChange(city);
-                            onToggleCityDropdown();
-                          }}
-                        >
-                          <Text style={styles.dropdownOptionText}>{city}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
+                  <View
+                    style={styles.dropdownMenu}
+                    onStartShouldSetResponder={() => true}
+                  >
+                <ScrollView
+                  style={styles.dropdownMenuAbsolute}
+                  nestedScrollEnabled={true}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={true}
+                >
+                  {finlandCities.map(cityOption => (
+                    <TouchableOpacity
+                      key={cityOption}
+                      style={styles.dropdownOption}
+                      onPress={() => {
+                        onCityChange(cityOption);
+                        onToggleCityDropdown();
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
                   </View>
                 )}
               </View>

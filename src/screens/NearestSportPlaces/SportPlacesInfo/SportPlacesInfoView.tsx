@@ -1,8 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { BarChart } from "react-native-chart-kit";
 import { TYPE_CONFIG, Gym } from "../../../Models/SportPlaces";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from '@react-navigation/native';
+
 
 interface SportPlacesInfoViewProps {
   loading: boolean;
@@ -17,17 +20,35 @@ export default function SportPlacesInfoView({
   places,
   type,
 }: SportPlacesInfoViewProps) {
+  const navigation = useNavigation();
+
   if (loading || !userLocation) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-        <Text>Loading...</Text>
+      <View style={styles.container}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" />
+          <Text>Loading...</Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={{ flex: 1 }}>
+      <TouchableOpacity 
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
+        <Text style={styles.backButtonText}>Back</Text>
+      </TouchableOpacity>
       <MapView
         style={{ flex: 2 }}
         initialRegion={{
@@ -74,4 +95,17 @@ export default function SportPlacesInfoView({
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   header: { fontSize: 18, fontWeight: "bold", margin: 8, textAlign: "center" },
+  container: { flex: 1 },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  backButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FF6B35',
+  },
 });
