@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, TouchableWithoutFeedback, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AVAILABLE_SPORTS } from '../../Models/User';
@@ -13,8 +13,10 @@ interface SettingsViewProps {
   age: number;
   bio: string;
   city: string;
+  cityQuery: string;
   selectedSports: string[];
   image: string | null;
+  gender: string;
   showImageOptions: boolean;
   showPasswordModal: boolean;
   currentPassword: string;
@@ -37,6 +39,13 @@ interface SettingsViewProps {
   onConfirmPasswordChange: (password: string) => void;
   onChangePassword: () => void;
   onLogout: () => void;
+  showCityDropdown: boolean;
+  onCityQueryChange: (query: string) => void;
+  onToggleCityDropdown: () => void;
+  finlandCities: string[];
+  showGenderDropdown: boolean;
+  onToggleGenderDropdown: () => void;
+  onGenderChange: (gender: string) => void;
 }
 
 export default function SettingsView({
@@ -44,6 +53,7 @@ export default function SettingsView({
   age,
   bio,
   city,
+  gender,
   selectedSports,
   image,
   showImageOptions,
@@ -53,7 +63,6 @@ export default function SettingsView({
   confirmPassword,
   onNameChange,
   onAgeChange,
-  onCityChange,
   onBioChange,
   onToggleSport,
   onShowImageOptions,
@@ -68,9 +77,28 @@ export default function SettingsView({
   onConfirmPasswordChange,
   onChangePassword,
   onLogout,
+  showCityDropdown,
+  onToggleCityDropdown,
+  finlandCities,
+  showGenderDropdown,
+  onToggleGenderDropdown,
+  onGenderChange,
+  onCityChange
 }: SettingsViewProps) {
+
   const navigation = useNavigation();
-  
+
+  const closeDropdowns = () => {
+    if (showCityDropdown) {
+      onToggleCityDropdown();
+      return;
+    }
+
+    if (showGenderDropdown) {
+      onToggleGenderDropdown();
+    } 
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity 
@@ -80,121 +108,206 @@ export default function SettingsView({
         <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileTop}>
-          <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.profileImageTop} />
-            ) : (
-              <MaterialCommunityIcons name="account-circle" size={120} color="#FF6B35" />
-            )}
-            <View style={styles.editIconContainer}>
-              <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
-            </View>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="account" size={18} color={colors.text} /> Name
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={onNameChange}
-          placeholder="Enter your name"
-          placeholderTextColor="#ccc"
-        />
-
-        <Text style={styles.label}>City</Text>
-        <TextInput
-          style={styles.input}
-          value={city}
-          onChangeText={onCityChange}
-          placeholder="Enter your city"
-        />
-
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={age != null ? age.toString() : ''}
-          onChangeText={text => onAgeChange(text === '' ? null : Number(text))}
-          placeholder="Enter your age"
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.sectionLabel}>Your Sports</Text>
-        <View style={styles.sportsContainer}>
-          {availableSports.map(sport => (
-            <TouchableOpacity
-              key={sport}
-              style={[
-                styles.sportChip,
-                selectedSports.includes(sport) && styles.sportChipSelected
-              ]}
-              onPress={() => onToggleSport(sport)}
+      <TouchableWithoutFeedback onPress={closeDropdowns}>
+        <View style={{ flex: 1 }}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             >
-              <Text style={[
-                styles.sportChipText,
-                selectedSports.includes(sport) && styles.sportChipTextSelected
-              ]}>
-                {sport}
-              </Text>
-            </TouchableOpacity>
-          ))}
+            <View style={styles.profileTop}>
+              <TouchableOpacity onPress={onShowImageOptions} style={styles.profileImageWrapper}>
+                {image ? (
+                  <Image source={{ uri: image }} style={styles.profileImageTop} />
+                ) : (
+                  <MaterialCommunityIcons name="account-circle" size={120} color="#FF6B35" />
+                )}
+                <View style={styles.editIconContainer}>
+                  <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
+                </View>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="account" size={18} color={colors.text} /> Name
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={onNameChange}
+              placeholder="Enter your name"
+              placeholderTextColor="#ccc"
+            />
+
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="human" size={18} color={colors.text} /> Gender
+            </Text>
+
+              <View style={[styles.dropdownContainer, showGenderDropdown && styles.dropdownContainerActive]}>
+                <TouchableOpacity 
+                  style={styles.inputContainer}
+                  onPress={() => {
+                    if (showCityDropdown) onToggleCityDropdown();
+                    onToggleGenderDropdown();
+                  }}
+                >
+                  <Text style={[styles.dropdownInput, { color: gender ? '#333' : '#ccc' }]}>
+                    {gender || 'Select Gender'}
+                  </Text>
+                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                </TouchableOpacity>
+
+                {showGenderDropdown && (
+                  <View style={styles.dropdownMenu}>
+                    {['Male', 'Female', 'Other'].map(option => (
+                      <TouchableOpacity
+                        key={option}
+                        style={styles.dropdownOption}
+                        onPress={() => {
+                          onGenderChange(option);
+                          onToggleGenderDropdown();
+                        }}
+                      >
+                        <Text style={styles.dropdownOptionText}>{option}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="map-marker" size={18} color={colors.text} /> City
+            </Text>
+
+              <View style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}>
+                <TouchableOpacity 
+                  style={styles.inputContainer}
+                  onPress={() => {
+                    if (showCityDropdown) onToggleCityDropdown();
+                    onToggleCityDropdown();
+                  }}
+                >
+                  <Text style={[styles.dropdownInput, { color: city ? '#333' : '#ccc' }]}>
+                    {city || 'Select City'}
+                  </Text>
+                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                </TouchableOpacity>
+
+                {showCityDropdown && (
+                  <View
+                    style={styles.dropdownMenu}
+                    onStartShouldSetResponder={() => true}
+                  >
+                <ScrollView
+                  style={styles.dropdownMenuAbsolute}
+                  nestedScrollEnabled={true}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={true}
+                >
+                  {finlandCities.map(cityOption => (
+                    <TouchableOpacity
+                      key={cityOption}
+                      style={styles.dropdownOption}
+                      onPress={() => {
+                        onCityChange(cityOption);
+                        onToggleCityDropdown();
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                  </View>
+                )}
+              </View>
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={age != null ? age.toString() : ''}
+              onChangeText={text => onAgeChange(text === '' ? null : Number(text))}
+              placeholder="Enter your age"
+              keyboardType="numeric"
+            />
+
+            <Text style={styles.sectionLabel}>Your Sports</Text>
+            <View style={styles.sportsContainer}>
+              {availableSports.map(sport => (
+                <TouchableOpacity
+                  key={sport}
+                  style={[
+                    styles.sportChip,
+                    selectedSports.includes(sport) && styles.sportChipSelected
+                  ]}
+                  onPress={() => onToggleSport(sport)}
+                >
+                  <Text style={[
+                    styles.sportChipText,
+                    selectedSports.includes(sport) && styles.sportChipTextSelected
+                  ]}>
+                    {sport}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.sectionLabel}>
+              <MaterialCommunityIcons name="message-text" size={18} color={colors.text} /> Bio
+            </Text>
+            <TextInput
+              style={[styles.input, styles.bioInput]}
+              value={bio}
+              onChangeText={onBioChange}
+              placeholder="Tell something about yourself..."
+              placeholderTextColor="#ccc"
+              multiline
+            />
+
+            <LinearGradient
+              colors={gradients.authBackground}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.saveButton}
+            >
+              <TouchableOpacity onPress={onSave} style={[styles.buttonInner, styles.buttonRow]}>
+                <MaterialCommunityIcons name="content-save" size={20} color="#fff" style={styles.buttonIconLeft} />
+                <Text style={styles.saveButtonText}>Save Changes</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <LinearGradient
+              colors={gradients.authBackground}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.changePasswordButton}
+            >
+              <TouchableOpacity 
+                style={[styles.buttonInner, styles.buttonRow]}
+                onPress={onShowPasswordModal}
+              >
+                <MaterialCommunityIcons name="lock-reset" size={20} color="#fff" style={styles.buttonIconLeft} />
+                <Text style={styles.changePasswordButtonText}>Change Password</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <LinearGradient
+              colors={['#d32f2f', '#c62828']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoutButton}
+            >
+              <TouchableOpacity onPress={onLogout} style={[styles.buttonInner, styles.buttonRow]}>
+                <MaterialCommunityIcons name="logout" size={20} color="#fff" style={styles.buttonIconLeft} />
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </ScrollView>
         </View>
+      </TouchableWithoutFeedback>
 
-        <Text style={styles.sectionLabel}>
-          <MaterialCommunityIcons name="message-text" size={18} color={colors.text} /> Bio
-        </Text>
-        <TextInput
-          style={[styles.input, styles.bioInput]}
-          value={bio}
-          onChangeText={onBioChange}
-          placeholder="Tell something about yourself..."
-          placeholderTextColor="#ccc"
-          multiline
-        />
-
-        <LinearGradient
-          colors={gradients.authBackground}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.saveButton}
-        >
-          <TouchableOpacity onPress={onSave} style={[styles.buttonInner, styles.buttonRow]}>
-            <MaterialCommunityIcons name="content-save" size={20} color="#fff" style={styles.buttonIconLeft} />
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <LinearGradient
-          colors={gradients.authBackground}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.changePasswordButton}
-        >
-          <TouchableOpacity 
-            style={[styles.buttonInner, styles.buttonRow]}
-            onPress={onShowPasswordModal}
-          >
-            <MaterialCommunityIcons name="lock-reset" size={20} color="#fff" style={styles.buttonIconLeft} />
-            <Text style={styles.changePasswordButtonText}>Change Password</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <LinearGradient
-          colors={['#d32f2f', '#c62828']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.logoutButton}
-        >
-          <TouchableOpacity onPress={onLogout} style={[styles.buttonInner, styles.buttonRow]}>
-            <MaterialCommunityIcons name="logout" size={20} color="#fff" style={styles.buttonIconLeft} />
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-      </ScrollView>
       <Modal
         visible={showImageOptions}
         transparent
@@ -202,30 +315,30 @@ export default function SettingsView({
         onRequestClose={onHideImageOptions}
       >
         <TouchableWithoutFeedback onPress={onHideImageOptions}>
-          <View style={styles.modalOverlay}>
-        <TouchableWithoutFeedback>
-          <View style={styles.imageOptionsContainer}>
-            <TouchableOpacity 
-              style={styles.imageOption}
-              onPress={onPickFromCamera}
-            >
-              <View style={styles.imageOptionContent}>
-                <MaterialCommunityIcons name="camera" size={20} color="#333" style={styles.imageOptionIcon} />
-                <Text style={styles.imageOptionText}>Take Photo</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.imageOption}
-              onPress={onPickFromGallery}
-            >
-              <View style={styles.imageOptionContent}>
-                <MaterialCommunityIcons name="image" size={20} color="#333" style={styles.imageOptionIcon} />
-                <Text style={styles.imageOptionText}>Choose from Gallery</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-          </View>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.imageOptionsContainer}>
+                  <TouchableOpacity 
+                    style={styles.imageOption}
+                    onPress={onPickFromCamera}
+                  >
+                    <View style={styles.imageOptionContent}>
+                      <MaterialCommunityIcons name="camera" size={20} color="#333" style={styles.imageOptionIcon} />
+                      <Text style={styles.imageOptionText}>Take Photo</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.imageOption}
+                    onPress={onPickFromGallery}
+                  >
+                    <View style={styles.imageOptionContent}>
+                      <MaterialCommunityIcons name="image" size={20} color="#333" style={styles.imageOptionIcon} />
+                      <Text style={styles.imageOptionText}>Choose from Gallery</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
         </TouchableWithoutFeedback>
       </Modal>
 
@@ -360,6 +473,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 14,
     backgroundColor: '#fafafa',
+    fontSize: 16,
+    color: '#333',
+  },
+  dropdownInput: {
+    flex: 1,
+    paddingVertical: 14,
     fontSize: 16,
     color: '#333',
   },
@@ -501,5 +620,68 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FF6B35',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    elevation: 20,
+    zIndex: 9999,
+    marginTop: 4,
+  },
+  dropdownMenuAbsolute: {
+    maxHeight: 200,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderTopWidth: 0, 
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  dropdownContainer: {
+    position: 'relative',
+    marginBottom: 1,
+    zIndex: 1,
+  },
+  dropdownContainerActive: {
+    zIndex: 50,
+  },
+  dropdownOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: '#fafafa',
+  },
+  inputIcon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
   },
 });

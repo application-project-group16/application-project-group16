@@ -45,45 +45,56 @@ export default function SportPlacesInfoViewModel() {
   }, []);
 
   useEffect(() => {
-    if (!userLocation) return;
-    const fetchPlaces = async () => {
-      setLoading(true);
-      const radius = 5000;
-      const typeConfig = TYPE_CONFIG[type];
-      if (!typeConfig) {
-        Alert.alert("Error", "Unknown sport place type.");
+      if (!userLocation) return;
+      const fetchPlaces = async () => {
+        setLoading(true);
+        const radius = 5000;
+        const typeConfig = TYPE_CONFIG[type];
+        if (!typeConfig) {
+          Alert.alert("Error", "Unknown sport place type.");
+          setLoading(false);
+          return;
+        }
+        const query = `
+  [out:json];
+  (
+    ${typeConfig.query.replace(/node\[(.*?)\];/g, (match, p1) => `node[${p1}](around:${radius},${userLocation.lat},${userLocation.lon});`)}
+  );
+  out body;
+        `;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+          const response = await fetch("https://overpass-api.de/api/interpreter", {
+            method: "POST",
+            body: query,
+            signal: controller.signal,
+          });
+          
+          clearTimeout(timeoutId);
+          
+          const data = await response.json();
+          const placesWithDistance: Gym[] = data.elements.map((el: any) => ({
+            id: el.id,
+            name: el.tags?.name || `Unnamed ${typeConfig.label.slice(0, -1)}`,
+            lat: el.lat,
+            lon: el.lon,
+            distance: haversine(userLocation.lat, userLocation.lon, el.lat, el.lon),
+          }));
+          setPlaces(placesWithDistance.sort((a, b) => a.distance - b.distance));
+        } catch (e) {
+          if (e instanceof Error && e.name === 'AbortError') {
+            Alert.alert("Timeout", "Overpass API is busy. Please try again later.");
+          } else {
+            console.log("Overpass fetch error:", e);
+            Alert.alert("Error", "Failed to fetch sport places from Overpass API.");
+          }
+        }
         setLoading(false);
-        return;
-      }
-      const query = `
-[out:json];
-(
-  ${typeConfig.query.replace(/node\[(.*?)\];/g, (match, p1) => `node[${p1}](around:${radius},${userLocation.lat},${userLocation.lon});`)}
-);
-out body;
-      `;
-      try {
-        const response = await fetch("https://overpass-api.de/api/interpreter", {
-          method: "POST",
-          body: query,
-        });
-        const data = await response.json();
-        const placesWithDistance: Gym[] = data.elements.map((el: any) => ({
-          id: el.id,
-          name: el.tags?.name || `Unnamed ${typeConfig.label.slice(0, -1)}`,
-          lat: el.lat,
-          lon: el.lon,
-          distance: haversine(userLocation.lat, userLocation.lon, el.lat, el.lon),
-        }));
-        setPlaces(placesWithDistance.sort((a, b) => a.distance - b.distance));
-      } catch (e) {
-        console.log("Overpass fetch error:", e);
-        Alert.alert("Error", "Failed to fetch sport places from Overpass API.");
-      }
-      setLoading(false);
-    };
-    fetchPlaces();
-  }, [userLocation, type]);
+      };
+      fetchPlaces();
+    }, [userLocation, type]);
 
   return (
     <SportPlacesInfoView

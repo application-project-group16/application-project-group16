@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AVAILABLE_SPORTS } from '../../Models/User';
 import { gradients } from '../../Models/Gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRef, useState } from 'react';
 
 const availableSports = AVAILABLE_SPORTS;
 
@@ -74,6 +75,9 @@ export default function RegisterView({
     if (showGenderDropdown) onToggleGenderDropdown();
     if (showCityDropdown) onToggleCityDropdown();
   };
+
+  const cityInputRef = useRef<View>(null);
+  const [cityInputLayout, setCityInputLayout] = useState({ y: 0, height: 0 });
 
   return (
     <LinearGradient colors={gradients.authBackground} style={styles.container}>
@@ -180,7 +184,15 @@ export default function RegisterView({
                 )}
               </View>
               
-              <View style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}>
+              <View 
+                ref={cityInputRef}
+                style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}
+                onLayout={(event) => {
+                  cityInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                    setCityInputLayout({ y: pageY, height });
+                  });
+                }}
+              >
                 <TouchableOpacity
                   style={styles.inputContainer}
                   onPress={() => {
@@ -212,29 +224,6 @@ export default function RegisterView({
                     </>
                   )}
                 </TouchableOpacity>
-
-                {showCityDropdown && (
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      keyboardShouldPersistTaps="handled"
-                      style={{ maxHeight: 150 }}
-                    >
-                      {finlandCities.map(city => (
-                        <TouchableOpacity
-                          key={city}
-                          style={styles.dropdownOption}
-                          onPress={() => {
-                            onCityChange(city);
-                            onToggleCityDropdown();
-                          }}
-                        >
-                          <Text style={styles.dropdownOptionText}>{city}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
               </View>
 
               <Text style={styles.sectionLabel}>Select Your Sports</Text>
@@ -309,6 +298,37 @@ export default function RegisterView({
               </LinearGradient>
             </View>
           </TouchableWithoutFeedback>
+          {showCityDropdown && cityInputLayout.y > 0 && (
+            <View 
+              style={[
+                styles.dropdownOverlay,
+                { 
+                  top: cityInputLayout.y + cityInputLayout.height,
+                }
+              ]}
+            >
+              <ScrollView
+                style={styles.dropdownMenuAbsolute}
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={true}
+              >
+                {finlandCities.map(cityOption => (
+                  <TouchableOpacity
+                    key={cityOption}
+                    style={styles.dropdownOption}
+                    onPress={() => {
+                      onCityChange(cityOption);
+                      onToggleCityDropdown();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </LinearGradient>
@@ -498,5 +518,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     backgroundColor: '#fff',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    left: 42,
+    right: 42,
+    elevation: 10,
+    marginTop: 4,
+  },
+  dropdownMenuAbsolute: {
+    maxHeight: 200,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderTopWidth: 0, 
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
 });

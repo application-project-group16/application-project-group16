@@ -7,4 +7,5 @@ export type MainTabParamList = {
   FriendList: undefined
   Profile: undefined
   ProfileView: { userId: string }
+  UserStatistics: undefined
 }
