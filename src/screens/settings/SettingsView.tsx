@@ -13,7 +13,6 @@ interface SettingsViewProps {
   age: number;
   bio: string;
   city: string;
-  cityQuery: string;
   selectedSports: string[];
   image: string | null;
   gender: string;
@@ -22,6 +21,9 @@ interface SettingsViewProps {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+  finlandCities: string[];
+  cityQuery: string;
+  onCityQueryChange: (query: string) => void;
   onNameChange: (name: string) => void;
   onAgeChange: (age: number) => void;
   onCityChange: (city: string) => void;
@@ -40,9 +42,7 @@ interface SettingsViewProps {
   onChangePassword: () => void;
   onLogout: () => void;
   showCityDropdown: boolean;
-  onCityQueryChange: (query: string) => void;
   onToggleCityDropdown: () => void;
-  finlandCities: string[];
   showGenderDropdown: boolean;
   onToggleGenderDropdown: () => void;
   onGenderChange: (gender: string) => void;
@@ -61,6 +61,8 @@ export default function SettingsView({
   currentPassword,
   newPassword,
   confirmPassword,
+  cityQuery,
+  onCityQueryChange,
   onNameChange,
   onAgeChange,
   onBioChange,
@@ -88,16 +90,13 @@ export default function SettingsView({
 
   const navigation = useNavigation();
 
-  const closeDropdowns = () => {
-    if (showCityDropdown) {
-      onToggleCityDropdown();
-      return;
-    }
-
-    if (showGenderDropdown) {
-      onToggleGenderDropdown();
-    } 
+  const closeAllDropdowns = () => {
+    if (showGenderDropdown) onToggleGenderDropdown();
+    if (showCityDropdown) onToggleCityDropdown();
   };
+
+  const cityInputRef = useRef<View>(null);
+  const [cityInputLayout, setCityInputLayout] = useState({ y: 0, height: 0 });
 
   return (
     <View style={styles.container}>
@@ -108,7 +107,7 @@ export default function SettingsView({
         <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
-      <TouchableWithoutFeedback onPress={closeDropdowns}>
+      <TouchableWithoutFeedback onPress={closeAllDropdowns}>
         <View style={{ flex: 1 }}>
           <ScrollView 
             contentContainerStyle={styles.scrollContent}
@@ -179,25 +178,55 @@ export default function SettingsView({
               <MaterialCommunityIcons name="map-marker" size={18} color={colors.text} /> City
             </Text>
 
-              <View style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}>
-                <TouchableOpacity 
-                  style={styles.inputContainer}
-                  onPress={() => {
-                    if (showCityDropdown) onToggleCityDropdown();
-                    onToggleCityDropdown();
-                  }}
-                >
-                  <Text style={[styles.dropdownInput, { color: city ? '#333' : '#ccc' }]}>
-                    {city || 'Select City'}
-                  </Text>
-                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
-                </TouchableOpacity>
-
-                {showCityDropdown && (
-                  <View
-                    style={styles.dropdownMenu}
-                    onStartShouldSetResponder={() => true}
-                  >
+            <View 
+              ref={cityInputRef}
+              style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}
+              onLayout={(event) => {
+                cityInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                  setCityInputLayout({ y: pageY, height });
+                });
+              }}
+            >
+              <TouchableOpacity
+                style={styles.inputContainer}
+                onPress={() => {
+                  if (showGenderDropdown) onToggleGenderDropdown();
+                  onToggleCityDropdown();
+                }}
+              >
+                {!showCityDropdown ? (
+                  <>
+                    <Text style={[styles.dropdownInput, { color: city ? '#333' : '#ccc', flex: 1 }]}>
+                      {city || 'Select City'}
+                    </Text>
+                    <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                  </>
+                ) : (
+                  <>
+                    <TextInput
+                      placeholder="Search city..."
+                      value={cityQuery}
+                      onChangeText={onCityQueryChange}
+                      style={[styles.dropdownInput, { flex: 1 }]}
+                      placeholderTextColor="#999"
+                      autoFocus
+                    />
+                    <TouchableOpacity onPress={onToggleCityDropdown}>
+                      <MaterialCommunityIcons name="close" size={18} color="#666" />
+                    </TouchableOpacity>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+            {showCityDropdown && cityInputLayout.y > 0 && (
+              <View 
+                style={[
+                  styles.dropdownOverlay,
+                  { 
+                    top: cityInputLayout.y + cityInputLayout.height,
+                  }
+                ]}
+              >
                 <ScrollView
                   style={styles.dropdownMenuAbsolute}
                   nestedScrollEnabled={true}
@@ -218,9 +247,9 @@ export default function SettingsView({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                  </View>
-                )}
               </View>
+            )}
+
 
             <Text style={styles.sectionLabel}>
               <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
@@ -623,8 +652,9 @@ const styles = StyleSheet.create({
   },
   dropdownOverlay: {
     position: 'absolute',
-    elevation: 20,
-    zIndex: 9999,
+    left: 42,
+    right: 42,
+    elevation: 10,
     marginTop: 4,
   },
   dropdownMenuAbsolute: {
