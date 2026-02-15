@@ -47,6 +47,7 @@ export default function SettingsViewModel() {
 
           setName(data.name ?? '');
           setAge(typeof data.age === 'number' ? data.age : null);
+          setGender(data.gender ?? '');
           setCity(data.city ?? '');
           setBio(data.bio ?? '');
           setSelectedSports(Array.isArray(data.sports) ? data.sports : []);
@@ -140,6 +141,16 @@ export default function SettingsViewModel() {
     const user = getAuth().currentUser;
     if (!user) {
       Alert.alert('Not logged in');
+      return;
+    }
+
+    if (!name || !age || !gender || !city || selectedSports.length === 0) {
+      Alert.alert('Error', 'Please fill in all required fields and select at least one sport.');
+      return;
+    }
+
+    if (age < 18 || age > 70) {
+      Alert.alert('Error', 'Age must be between 18 and 70.');
       return;
     }
 

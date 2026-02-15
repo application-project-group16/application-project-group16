@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import * as Location from 'expo-location';
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import SportPlacesInfoView from "./SportPlacesInfoView";
 import { TYPE_CONFIG, Gym } from "../../../Models/SportPlaces";
 
@@ -23,38 +23,64 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 export default function SportPlacesInfoViewModel() {
   const route = useRoute();
+  const navigation = useNavigation();
   const { type } = route.params as { type: keyof typeof TYPE_CONFIG };
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [places, setPlaces] = useState<Gym[]>([]);
   const [loading, setLoading] = useState(true);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert("Permission denied", "Location permission is required.");
-        setLoading(false);
-        return;
-      }
-      let loc = await Location.getCurrentPositionAsync({});
-      setUserLocation({
-        lat: loc.coords.latitude,
-        lon: loc.coords.longitude,
-      });
-    })();
-  }, []);
-
-  useEffect(() => {
-      if (!userLocation) return;
-      const fetchPlaces = async () => {
-        setLoading(true);
-        const radius = 5000;
-        const typeConfig = TYPE_CONFIG[type];
-        if (!typeConfig) {
-          Alert.alert("Error", "Unknown sport place type.");
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert("Permission denied", "Location permission is required.", [
+            { 
+              text: "OK", 
+              onPress: () => navigation.goBack() 
+            }
+          ]);
+          setPermissionDenied(true);
           setLoading(false);
           return;
         }
+
+        let loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        
+        setUserLocation({
+          lat: loc.coords.latitude,
+          lon: loc.coords.longitude,
+        });
+      } catch (error) {
+        Alert.alert("Error", "Failed to get your location. Please try again.", [
+          { 
+            text: "OK", 
+            onPress: () => navigation.goBack() 
+          }
+        ]);
+        setLoading(false);
+      }
+    })();
+  }, [navigation]);
+
+  useEffect(() => {
+    if (permissionDenied || !userLocation) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchPlaces = async () => {
+      setLoading(true);
+      const radius = 5000;
+      const typeConfig = TYPE_CONFIG[type];
+      if (!typeConfig) {
+        Alert.alert("Error", "Unknown sport place type.");
+        setLoading(false);
+        return;
+      }
         const query = `
   [out:json];
   (
@@ -75,6 +101,12 @@ export default function SportPlacesInfoViewModel() {
           clearTimeout(timeoutId);
           
           const data = await response.json();
+          if (data.elements && data.elements.length === 0) {
+            Alert.alert("Overpass API is busy. Please try again later.");
+            setLoading(false);
+            navigation.goBack() 
+            return;
+          }
           const placesWithDistance: Gym[] = data.elements.map((el: any) => ({
             id: el.id,
             name: el.tags?.name || `Unnamed ${typeConfig.label.slice(0, -1)}`,
@@ -86,15 +118,16 @@ export default function SportPlacesInfoViewModel() {
         } catch (e) {
           if (e instanceof Error && e.name === 'AbortError') {
             Alert.alert("Timeout", "Overpass API is busy. Please try again later.");
+            navigation.goBack() 
           } else {
-            console.log("Overpass fetch error:", e);
             Alert.alert("Error", "Failed to fetch sport places from Overpass API.");
+            navigation.goBack() 
           }
         }
         setLoading(false);
       };
       fetchPlaces();
-    }, [userLocation, type]);
+    }, [userLocation, type, permissionDenied]);
 
   return (
     <SportPlacesInfoView

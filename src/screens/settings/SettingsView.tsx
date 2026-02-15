@@ -13,7 +13,6 @@ interface SettingsViewProps {
   age: number;
   bio: string;
   city: string;
-  cityQuery: string;
   selectedSports: string[];
   image: string | null;
   gender: string;
@@ -22,6 +21,9 @@ interface SettingsViewProps {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+  finlandCities: string[];
+  cityQuery: string;
+  onCityQueryChange: (query: string) => void;
   onNameChange: (name: string) => void;
   onAgeChange: (age: number) => void;
   onCityChange: (city: string) => void;
@@ -40,9 +42,7 @@ interface SettingsViewProps {
   onChangePassword: () => void;
   onLogout: () => void;
   showCityDropdown: boolean;
-  onCityQueryChange: (query: string) => void;
   onToggleCityDropdown: () => void;
-  finlandCities: string[];
   showGenderDropdown: boolean;
   onToggleGenderDropdown: () => void;
   onGenderChange: (gender: string) => void;
@@ -61,6 +61,8 @@ export default function SettingsView({
   currentPassword,
   newPassword,
   confirmPassword,
+  cityQuery,
+  onCityQueryChange,
   onNameChange,
   onAgeChange,
   onBioChange,
@@ -88,16 +90,12 @@ export default function SettingsView({
 
   const navigation = useNavigation();
 
-  const closeDropdowns = () => {
-    if (showCityDropdown) {
-      onToggleCityDropdown();
-      return;
-    }
-
-    if (showGenderDropdown) {
-      onToggleGenderDropdown();
-    } 
+  const closeAllDropdowns = () => {
+    if (showGenderDropdown) onToggleGenderDropdown();
+    if (showCityDropdown) onToggleCityDropdown();
   };
+  const cityInputRef = useRef<View>(null);
+  const [cityInputLayout, setCityInputLayout] = useState({ y: 0, height: 0 });
 
   return (
     <View style={styles.container}>
@@ -108,7 +106,7 @@ export default function SettingsView({
         <MaterialCommunityIcons name="arrow-left" size={24} color="#FF6B35" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
-      <TouchableWithoutFeedback onPress={closeDropdowns}>
+      <TouchableWithoutFeedback onPress={closeAllDropdowns}>
         <View style={{ flex: 1 }}>
           <ScrollView 
             contentContainerStyle={styles.scrollContent}
@@ -158,7 +156,7 @@ export default function SettingsView({
                 </TouchableOpacity>
 
                 {showGenderDropdown && (
-                  <View style={styles.dropdownMenu}>
+                  <View style={styles.genderDropdownMenu}>
                     {['Male', 'Female', 'Other'].map(option => (
                       <TouchableOpacity
                         key={option}
@@ -179,48 +177,65 @@ export default function SettingsView({
               <MaterialCommunityIcons name="map-marker" size={18} color={colors.text} /> City
             </Text>
 
-              <View style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}>
-                <TouchableOpacity 
-                  style={styles.inputContainer}
-                  onPress={() => {
-                    if (showCityDropdown) onToggleCityDropdown();
-                    onToggleCityDropdown();
-                  }}
-                >
-                  <Text style={[styles.dropdownInput, { color: city ? '#333' : '#ccc' }]}>
-                    {city || 'Select City'}
-                  </Text>
-                  <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
-                </TouchableOpacity>
-
-                {showCityDropdown && (
-                  <View
-                    style={styles.dropdownMenu}
-                    onStartShouldSetResponder={() => true}
-                  >
-                <ScrollView
-                  style={styles.dropdownMenuAbsolute}
-                  nestedScrollEnabled={true}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={true}
-                >
-                  {finlandCities.map(cityOption => (
-                    <TouchableOpacity
-                      key={cityOption}
-                      style={styles.dropdownOption}
-                      onPress={() => {
-                        onCityChange(cityOption);
-                        onToggleCityDropdown();
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+            <View 
+              ref={cityInputRef}
+              style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}
+            >
+              <TouchableOpacity
+                style={styles.inputContainer}
+                onPress={() => {
+                  if (showGenderDropdown) onToggleGenderDropdown();
+                  onToggleCityDropdown();
+                }}
+              >
+                {!showCityDropdown ? (
+                  <>
+                    <Text style={[styles.dropdownInput, { color: city ? '#333' : '#ccc', flex: 1 }]}>
+                      {city || 'Select City'}
+                    </Text>
+                    <MaterialCommunityIcons name="chevron-down" size={18} color="#666" />
+                  </>
+                ) : (
+                  <>
+                    <TextInput
+                      placeholder="Search city..."
+                      value={cityQuery}
+                      onChangeText={onCityQueryChange}
+                      style={[styles.dropdownInput, { flex: 1 }]}
+                      placeholderTextColor="#999"
+                      autoFocus
+                    />
+                    <TouchableOpacity onPress={onToggleCityDropdown}>
+                      <MaterialCommunityIcons name="close" size={18} color="#666" />
                     </TouchableOpacity>
-                  ))}
-                </ScrollView>
-                  </View>
+                  </>
                 )}
+              </TouchableOpacity>
               </View>
+              {showCityDropdown && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView
+                    style={styles.dropdownScroll}
+                    nestedScrollEnabled={true}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {finlandCities.map(cityOption => (
+                      <TouchableOpacity
+                        key={cityOption}
+                        style={styles.dropdownOption}
+                        onPress={() => {
+                          onCityChange(cityOption);
+                          onToggleCityDropdown();
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
 
             <Text style={styles.sectionLabel}>
               <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
@@ -609,6 +624,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  genderDropdownMenu: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    bottom: 485,
+    left: 20,
+    right: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -623,8 +667,9 @@ const styles = StyleSheet.create({
   },
   dropdownOverlay: {
     position: 'absolute',
-    elevation: 20,
-    zIndex: 9999,
+    left: 42,
+    right: 42,
+    elevation: 10,
     marginTop: 4,
   },
   dropdownMenuAbsolute: {
@@ -638,7 +683,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: 'relative',
-    marginBottom: 1,
+    marginBottom: -10,
     zIndex: 1,
   },
   dropdownContainerActive: {
@@ -667,21 +712,5 @@ const styles = StyleSheet.create({
   inputIcon: {
     fontSize: 18,
     marginRight: 10,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    overflow: 'hidden',
-    zIndex: 100,
-    elevation: 10,
-  },
-  dropdownScroll: {
-    maxHeight: 200,
   },
 });
