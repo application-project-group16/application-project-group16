@@ -94,7 +94,6 @@ export default function SettingsView({
     if (showGenderDropdown) onToggleGenderDropdown();
     if (showCityDropdown) onToggleCityDropdown();
   };
-
   const cityInputRef = useRef<View>(null);
   const [cityInputLayout, setCityInputLayout] = useState({ y: 0, height: 0 });
 
@@ -157,7 +156,7 @@ export default function SettingsView({
                 </TouchableOpacity>
 
                 {showGenderDropdown && (
-                  <View style={styles.dropdownMenu}>
+                  <View style={styles.genderDropdownMenu}>
                     {['Male', 'Female', 'Other'].map(option => (
                       <TouchableOpacity
                         key={option}
@@ -181,11 +180,6 @@ export default function SettingsView({
             <View 
               ref={cityInputRef}
               style={[styles.dropdownContainer, showCityDropdown && styles.dropdownContainerActive]}
-              onLayout={(event) => {
-                cityInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                  setCityInputLayout({ y: pageY, height });
-                });
-              }}
             >
               <TouchableOpacity
                 style={styles.inputContainer}
@@ -217,39 +211,31 @@ export default function SettingsView({
                   </>
                 )}
               </TouchableOpacity>
-            </View>
-            {showCityDropdown && cityInputLayout.y > 0 && (
-              <View 
-                style={[
-                  styles.dropdownOverlay,
-                  { 
-                    top: cityInputLayout.y + cityInputLayout.height,
-                  }
-                ]}
-              >
-                <ScrollView
-                  style={styles.dropdownMenuAbsolute}
-                  nestedScrollEnabled={true}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={true}
-                >
-                  {finlandCities.map(cityOption => (
-                    <TouchableOpacity
-                      key={cityOption}
-                      style={styles.dropdownOption}
-                      onPress={() => {
-                        onCityChange(cityOption);
-                        onToggleCityDropdown();
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.dropdownOptionText}>{cityOption}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
               </View>
-            )}
-
+              {showCityDropdown && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView
+                    style={styles.dropdownScroll}
+                    nestedScrollEnabled={true}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {finlandCities.map(cityOption => (
+                      <TouchableOpacity
+                        key={cityOption}
+                        style={styles.dropdownOption}
+                        onPress={() => {
+                          onCityChange(cityOption);
+                          onToggleCityDropdown();
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.dropdownOptionText}>{cityOption}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
 
             <Text style={styles.sectionLabel}>
               <MaterialCommunityIcons name="calendar" size={18} color={colors.text} /> Age
@@ -638,6 +624,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  genderDropdownMenu: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    bottom: 485,
+    left: 20,
+    right: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -668,7 +683,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: 'relative',
-    marginBottom: 1,
+    marginBottom: -10,
     zIndex: 1,
   },
   dropdownContainerActive: {
@@ -697,21 +712,5 @@ const styles = StyleSheet.create({
   inputIcon: {
     fontSize: 18,
     marginRight: 10,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    overflow: 'hidden',
-    zIndex: 100,
-    elevation: 10,
-  },
-  dropdownScroll: {
-    maxHeight: 200,
   },
 });

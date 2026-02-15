@@ -47,6 +47,7 @@ export default function SettingsViewModel() {
 
           setName(data.name ?? '');
           setAge(typeof data.age === 'number' ? data.age : null);
+          setGender(data.gender ?? '');
           setCity(data.city ?? '');
           setBio(data.bio ?? '');
           setSelectedSports(Array.isArray(data.sports) ? data.sports : []);
