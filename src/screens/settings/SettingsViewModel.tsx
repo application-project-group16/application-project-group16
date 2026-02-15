@@ -144,6 +144,16 @@ export default function SettingsViewModel() {
       return;
     }
 
+    if (!name || !age || !gender || !city || selectedSports.length === 0) {
+      Alert.alert('Error', 'Please fill in all required fields and select at least one sport.');
+      return;
+    }
+
+    if (age < 18 || age > 70) {
+      Alert.alert('Error', 'Age must be between 18 and 70.');
+      return;
+    }
+
     try {
       await setDoc(doc(db, 'users', user.uid), {
         name, age, gender, city, bio, sports: selectedSports, image, updatedAt: new Date(),
