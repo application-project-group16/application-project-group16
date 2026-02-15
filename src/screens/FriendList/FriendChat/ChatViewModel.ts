@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { Message } from "../../../Models/Chat";
-import { collection, query, doc, updateDoc, onSnapshot, orderBy, serverTimestamp, addDoc } from "firebase/firestore";
+import { collection, query, doc, updateDoc, onSnapshot, orderBy, serverTimestamp, addDoc, increment, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase/Config";
 import { useAuth } from "../../../context/AuthContext";
-import { handleReportSubmit } from '../../../Services/Reports';
+import { handleReportSubmit, useChatClosed, useHasReported } from '../../../Services/Reports';
 
 export const useChatViewModel = (chatId: string) => {
     const { user } = useAuth();
     const currentUserUid = user?.uid;
     const [messages, setMessages] = useState<Message[]>([]);
+
+    const chatClosed = useChatClosed(chatId);
+    const hasReported = useHasReported(chatId, currentUserUid);
 
     useEffect(() => {
         if (!chatId) return;
@@ -27,8 +30,26 @@ export const useChatViewModel = (chatId: string) => {
             setMessages(msgs);
         });
 
+
         return unsubscribe;
     }, [chatId]);
+
+    useEffect(() => {
+        const resetUnreadCount = async () => {
+            if (!currentUserUid || !chatId) return;
+            const chatRef = doc(db, 'chats', chatId);
+
+            try {
+                await updateDoc(chatRef, {
+                    [`unread.${currentUserUid}`]: 0,
+                });
+            } catch (err) {
+                console.error('Failed to reset unread count', err);
+            }
+        };
+
+        resetUnreadCount();
+    }, [chatId, currentUserUid]);
 
     const sendMessage = async (text: string) => {
         if (!currentUserUid || !chatId) return;
@@ -39,10 +60,26 @@ export const useChatViewModel = (chatId: string) => {
             createdAt: serverTimestamp(),
         });
 
-        await updateDoc(doc(db, 'chats', chatId), {
-            lastMessage: text,
-            updatedAt: serverTimestamp(),
-        });
+        const chatRef = doc(db, 'chats', chatId);
+        try {
+            const chatSnap = await getDoc(chatRef);
+            const participants: string[] = chatSnap.exists() ? (chatSnap.data() as any).participants || [] : [];
+
+            const updates: any = {
+                lastMessage: text,
+                updatedAt: serverTimestamp(),
+            };
+
+            participants.forEach(uid => {
+                if (uid !== currentUserUid) {
+                    updates[`unread.${uid}`] = increment(1);
+                }
+            });
+
+            await updateDoc(chatRef, updates);
+        } catch (err) {
+            console.error('Failed to update chat unread counts', err);
+        }
     }
 
     return {
@@ -50,6 +87,8 @@ export const useChatViewModel = (chatId: string) => {
         sendMessage,
         currentUserUid,
         handleReportSubmit,
+        chatClosed,
+        hasReported,
     }
 
 }
