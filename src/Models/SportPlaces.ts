@@ -14,9 +14,14 @@ export const TYPE_CONFIG = {
   },
   fitness_centers: {
     query: `
-      node["leisure"="fitness_centree"];
+      node["leisure"="fitness_centre"];
       node["sport"="multi"];`,
     label: "Fitness centers"
+  },
+  bowling: {
+    query: `
+      node["leisure"="bowling_alley"];`,
+    label: "Bowling alleys"
   }
 };
 
@@ -32,6 +37,7 @@ export const SPORT_TYPES = [
   { label: "Gyms", value: "gyms" },
   { label: "Swimming Pools", value: "swimming_pools" },
   { label: "Fitness centers", value: "fitness_centers" },
+  { label: "Bowling alleys", value: "bowling" },
 ];
 
 export type RootStackParamList = {
