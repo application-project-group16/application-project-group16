@@ -61,17 +61,17 @@ export default function SportPlacesInfoView({
       >
         {places.map((place) => (
           <Marker
-            key={place.id}
-            coordinate={{ latitude: place.lat, longitude: place.lon }}
-            title={place.name}
-            description={`Distance: ${place.distance.toFixed(0)} m`}
+        key={place.id}
+        coordinate={{ latitude: place.lat, longitude: place.lon }}
+        title={place.name}
+        description={`Distance: ${place.distance.toFixed(0)} m`}
           />
         ))}
       </MapView>
       <Text style={styles.header}>Top nearest {TYPE_CONFIG[type]?.label}</Text>
       <BarChart
         data={{
-          labels: places.slice(0, 5).map((g) => g.name.length > 10 ? g.name.slice(0, 10) + "…" : g.name),
+          labels: places.slice(0, 5).map((g) => g.name.length > 10 ? g.name.slice(0, 9) + "…" : g.name),
           datasets: [{ data: places.slice(0, 5).map((g) => Math.round(g.distance)) }],
         }}
         width={Dimensions.get("window").width - 16}
@@ -85,12 +85,16 @@ export default function SportPlacesInfoView({
           decimalPlaces: 0,
           color: (opacity = 1) => `rgba(34, 128, 176, ${opacity})`,
           labelColor: () => "#222",
+          barPercentage: 0.7,
+          propsForLabels: {
+            fontSize: 11,
+          },
         }}
         style={{ margin: 8, borderRadius: 8 }}
       />
-    </View>
-  );
-}
+        </View>
+      );
+    }
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
