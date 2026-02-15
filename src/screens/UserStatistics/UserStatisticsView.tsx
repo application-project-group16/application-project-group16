@@ -36,7 +36,7 @@ export default function UserStatisticsView({
   const hasCityData = cityData.some(v => v > 0)
   const hasUserGrowthData = userGrowthData.some(v => v > 0)
   const maxData = Math.max(...data, 1)
-  const chartWidth = Math.max(Dimensions.get('window').width - 16, labels.length * 80)
+  const chartWidth = Math.max(Dimensions.get('window').width - 32, labels.length * 60)
 
   const chartColors = ['#FF6B35', '#FF1744', '#2196F3', '#4CAF50', '#FFC107', '#9C27B0', '#00BCD4']
   const cityChartData = cityLabels.map((label, i) => ({
@@ -66,7 +66,7 @@ export default function UserStatisticsView({
               datasets: [{ data }],
             }}
             width={chartWidth}
-            height={280}
+            height={200}
             yAxisLabel=""
             yAxisSuffix=""
             yAxisInterval={1}
@@ -78,12 +78,11 @@ export default function UserStatisticsView({
               color: (opacity = 1) => `rgba(34, 128, 176, ${opacity})`,
               labelColor: () => '#222',
               propsForLabels: {
-                fontSize: 12,
+                fontSize: 10,
               },
             }}
             style={styles.chart}
             segments={Math.ceil(maxData)}
-            scrollEnabled={true}
           />
         </ScrollView>
       ) : (
@@ -99,7 +98,7 @@ export default function UserStatisticsView({
           <PieChart
             data={cityChartData}
             width={Dimensions.get('window').width - 32}
-            height={220}
+            height={180}
             chartConfig={{
               backgroundColor: '#fff',
               backgroundGradientFrom: '#fff',
@@ -118,7 +117,7 @@ export default function UserStatisticsView({
         </View>
       )}
 
-      <Text style={[styles.header, { marginTop: 24, marginBottom: 15 }]}>App's User Growth</Text>
+      <Text style={[styles.header, { marginTop: 2, marginBottom: 20 }]}>App's User Growth</Text>
 
       {hasUserGrowthData ? (
         <View style={styles.lineChartContainer}>
@@ -129,8 +128,8 @@ export default function UserStatisticsView({
                 : userGrowthLabels,
               datasets: [{ data: userGrowthData }],
             }}
-            width={Dimensions.get('window').width - 48}
-            height={260}
+            width={Dimensions.get('window').width - 28}
+            height={220}
             yAxisLabel=""
             yAxisSuffix=""
             yAxisInterval={1}
@@ -169,10 +168,10 @@ const styles = StyleSheet.create({
   subHeader: { fontSize: 14, color: '#666', marginBottom: 12, paddingHorizontal: 16 },
   scrollContainer: { marginHorizontal: 16 },
   scrollContent: { paddingRight: 8 },
-  chart: { marginVertical: 8, borderRadius: 8 },
-  pieChartContainer: { alignItems: 'center', paddingHorizontal: 16, marginBottom: 24 },
+  chart: { marginVertical: 8, borderRadius: 8, marginLeft: -40 },
+  pieChartContainer: { alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 },
   pieChart: { borderRadius: 8 },
-  lineChartContainer: { alignItems: 'center', paddingHorizontal: 16, marginBottom: 24, marginTop: 8 },
+  lineChartContainer: { alignItems: 'center', paddingHorizontal: 16, marginBottom: 24, marginTop: 8, marginLeft: -30 },
   lineChart: { borderRadius: 8 },
   emptyContainer: { justifyContent: 'center', alignItems: 'center', paddingVertical: 32 },
   noData: { fontSize: 16, color: '#888' },
