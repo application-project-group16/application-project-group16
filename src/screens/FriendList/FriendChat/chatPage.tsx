@@ -3,21 +3,31 @@ import { View, Text, } from 'react-native';
 import ChatView  from "./chatView";
 import FriendListScreen from "../FriendListView";
 import { db } from "../../../firebase/Config";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../../../context/AuthContext";
 
 const ChatPage = () => {
 
     const handleSelectFriend = async (friendUid: string) => {
-        console.log('Friend selected:', friendUid);
         const chatId = await openChatWithFriend(friendUid);
-        console.log('Chat ID:', chatId);
-        if (chatId) setSelectedChatId(chatId);
+
+        if (chatId){
+            const userSnap = await getDoc(doc(db, 'users', friendUid));
+            
+            if (userSnap.exists()) {
+            const friendData = userSnap.data();
+            setSelectedFriendName(friendData.name || 'Unknown');
+            }
+
+            setSelectedChatId(chatId);
+        }
     };
     
     const { user } = useAuth();
     const currentUserUid = user?.uid;
     const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+    const [selectedFriendName, setSelectedFriendName] = useState<string | null>(null);
+    const [selectedFriendImage, setSelectedFriendImage] = useState<string | null>(null);
 
     const openChatWithFriend = async (friendUid: string): Promise<string | null> => {
         if (!currentUserUid) { 
@@ -49,6 +59,7 @@ const ChatPage = () => {
             participants: [currentUserUid, friendUid],
             updatedAt: new Date(),
             lastMessage: '',
+            unreadCount: 0,
         });
 
         return newChat.id;
@@ -64,7 +75,12 @@ const ChatPage = () => {
             {selectedChatId ? (
                 <ChatView
                     chatId={selectedChatId}
-                    onBack={() => setSelectedChatId(null)}
+                    friendName={selectedFriendName || 'Chat'}
+                    friendImage={selectedFriendImage || ''}
+                    onBack={() => {
+                        setSelectedChatId(null)
+                        setSelectedFriendName(null)
+                    }}
                 />
             ) : (
                 <FriendListScreen onSelectFriend={handleSelectFriend} /> 
