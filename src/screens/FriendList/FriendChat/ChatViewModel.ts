@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Message } from "../../../Models/Chat";
 import { collection, query, doc, updateDoc, onSnapshot, orderBy, serverTimestamp, addDoc, increment, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase/Config";
@@ -9,9 +9,23 @@ export const useChatViewModel = (chatId: string) => {
     const { user } = useAuth();
     const currentUserUid = user?.uid;
     const [messages, setMessages] = useState<Message[]>([]);
+    const otherUserNameRef = useRef<string>('');
 
     const chatClosed = useChatClosed(chatId);
     const hasReported = useHasReported(chatId, currentUserUid);
+
+    const resetUnreadCount = async () => {
+        if (!currentUserUid || !chatId) return;
+        const chatRef = doc(db, 'chats', chatId);
+
+        try {
+            await updateDoc(chatRef, {
+                [`unread.${currentUserUid}`]: 0,
+            });
+        } catch (err) {
+            console.error('Failed to reset unread count', err);
+        }
+    };
 
     useEffect(() => {
         if (!chatId) return;
@@ -28,27 +42,10 @@ export const useChatViewModel = (chatId: string) => {
             })) as Message[];
             
             setMessages(msgs);
+            resetUnreadCount();
         });
 
-
         return unsubscribe;
-    }, [chatId]);
-
-    useEffect(() => {
-        const resetUnreadCount = async () => {
-            if (!currentUserUid || !chatId) return;
-            const chatRef = doc(db, 'chats', chatId);
-
-            try {
-                await updateDoc(chatRef, {
-                    [`unread.${currentUserUid}`]: 0,
-                });
-            } catch (err) {
-                console.error('Failed to reset unread count', err);
-            }
-        };
-
-        resetUnreadCount();
     }, [chatId, currentUserUid]);
 
     const sendMessage = async (text: string) => {
@@ -89,6 +86,9 @@ export const useChatViewModel = (chatId: string) => {
         handleReportSubmit,
         chatClosed,
         hasReported,
+        setOtherUserName: useCallback((name: string) => {
+            otherUserNameRef.current = name;
+        }, [])
     }
 
 }
