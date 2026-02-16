@@ -4,13 +4,13 @@ import { User } from '../../Models/User'
 import { useAuth } from '../../context/AuthContext'
 import { Dimensions, Animated } from 'react-native'
 import { Timestamp } from 'firebase/firestore'
+import { FINLAND_CITIES } from '../../Models/User'
 
 export interface SwipeCard extends User {
   id: string
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-const SCREEN_HEIGHT = Dimensions.get('window').height
 
 export const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25
 export const SWIPE_OUT_DURATION = 250
@@ -27,11 +27,11 @@ export const useSwipeViewModel = () => {
   const [swipedUsers, setSwipedUsers] = useState<string[]>([])
 
   const [selectedSports, setSelectedSports] = useState<string[]>([])
+  const [selectedGender, setSelectedGender] = useState<string | null>(null)
+  const [selectedCity, setSelectedCity] = useState<string | null>(null)
+
   const [minAge, setMinAge] = useState<number | null>(null)
   const [maxAge, setMaxAge] = useState<number | null>(null)
-
-  const [cardHeight, setCardHeight] = useState(SCREEN_HEIGHT * 0.72)
-  const [imageHeight, setImageHeight] = useState(SCREEN_HEIGHT * 0.6)
 
   const positions = useRef<Animated.ValueXY[]>([])
   const cardsRef = useRef<SwipeCard[]>([])
@@ -41,7 +41,9 @@ export const useSwipeViewModel = () => {
   const hasActiveFilters =
     selectedSports.length > 0 ||
     minAge !== null ||
-    maxAge !== null
+    maxAge !== null ||
+    selectedGender !== null ||
+    selectedCity !== null
 
   useEffect(() => { cardsRef.current = cards }, [cards])
   useEffect(() => { indexRef.current = currentIndex; iconOpacity.setValue(1) }, [currentIndex])
@@ -81,28 +83,21 @@ export const useSwipeViewModel = () => {
   }, [currentUserId])
 
   useEffect(() => {
-    const isFilterActive = selectedSports.length > 0 || minAge !== null || maxAge !== null
-    const newCardHeight = isFilterActive ? SCREEN_HEIGHT * 0.67 : SCREEN_HEIGHT * 0.72
-    setCardHeight(newCardHeight)
-    setImageHeight(isFilterActive ? newCardHeight * 0.835 : newCardHeight * 0.845)
-  }, [selectedSports, minAge, maxAge])
-
-  useEffect(() => {
     const filtered = allCards
       .filter(card => {
-        const sportOk =
-          selectedSports.length === 0 ||
-          card.sports.some(s => selectedSports.includes(s))
+        const sportOk = selectedSports.length === 0 || card.sports.some(s => selectedSports.includes(s))
         const minOk = minAge === null || card.age >= minAge
         const maxOk = maxAge === null || card.age <= maxAge
-        return sportOk && minOk && maxOk
+        const genderOk = !selectedGender || card.gender === selectedGender
+        const cityOk = !selectedCity || card.city === selectedCity
+        return sportOk && minOk && maxOk && genderOk && cityOk
       })
       .filter(card => !swipedUsers.includes(card.id))
 
     setCards(filtered)
     positions.current = filtered.map(() => new Animated.ValueXY())
     setCurrentIndex(0)
-  }, [selectedSports, minAge, maxAge, allCards, swipedUsers])
+  }, [selectedSports, minAge, maxAge, selectedGender, selectedCity, allCards, swipedUsers])
 
   const forceSwipe = (direction: 'left' | 'right', onSwipeComplete: (direction: 'left' | 'right', idx: number) => void) => {
     const idx = indexRef.current
@@ -145,6 +140,8 @@ export const useSwipeViewModel = () => {
     }
   }
 
+  const finlandCities = FINLAND_CITIES
+
   return {
     currentUserId,
     allCards,
@@ -154,18 +151,21 @@ export const useSwipeViewModel = () => {
     swipedUsers,
     selectedSports,
     setSelectedSports,
+    selectedGender,
+    setSelectedGender,
+    selectedCity,
+    setSelectedCity,
     minAge,
     setMinAge,
     maxAge,
     setMaxAge,
-    cardHeight,
-    imageHeight,
     positions,
     indexRef,
     iconOpacity,
     hasActiveFilters,
     forceSwipe,
     onSwipeComplete,
+    finlandCities,
   }
 }
 
