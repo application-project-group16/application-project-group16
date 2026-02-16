@@ -1,16 +1,19 @@
 import { useRef, useState,} from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, Modal } from 'react-native';
+import { View, Image, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, Modal, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useChatViewModel } from './ChatViewModel';
 import { handleReportSubmit, useChatClosed, useHasReported } from '../../../Services/Reports';
-import { KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { gradients } from '../../../Models/Gradient'
+import { LinearGradient } from 'expo-linear-gradient';
 
 export function ChatView({ 
     chatId, 
-    friendName, 
+    friendName,
+    friendImage,
     onBack 
 }: { 
     chatId: string, 
     friendName: string | null,
+    friendImage: string | null,
     onBack: () => void }) {
 
     const { messages, sendMessage, currentUserUid, chatClosed, hasReported } = useChatViewModel(chatId);
@@ -59,20 +62,34 @@ export function ChatView({
             behavior={Platform.OS === 'ios' ? 'padding' : "height"}
             keyboardVerticalOffset={Platform.OS === "android" ? 80 : 0}
         >
-            <View style={styles.container}>
+            <LinearGradient style={styles.container} colors={gradients.chatBackground}>
                 <View style={styles.header}>
+                    <View style={styles.headerLeft}>
                     <TouchableOpacity onPress={onBack}>
                         <Text style={styles.backArrow}>‹</Text>
                     </TouchableOpacity>
+                    <Image
+                        source={
+                            friendImage
+                                ? { uri: friendImage }
+                                : require('../../../assets/favicon.png')
+                        }
+                        style={styles.headerAvatar}
+                    />
+
                     <Text style={styles.headerName}>
                     {friendName ?? "Chat"}
                     </Text>
+                    </View>
 
                     {messages.some(m => m.senderId !== currentUserUid) && (
                         hasReported ? (
-                            <Text style={styles.blockedText}>Blocked</Text>
+                            <View style={{ padding: 6, backgroundColor: '#ffcccc', borderRadius: 8 }}>
+                                <Text style={styles.blockedText}>Blocked</Text>
+                            </View>
                         ) : (
                             <TouchableOpacity
+                                style={styles.reportButton}
                                 onPress={() =>
                                     Alert.alert(
                                         'Report user',
@@ -88,7 +105,7 @@ export function ChatView({
                                     )
                                 }
                             >
-                                <Text style={styles.reportButton}>Report</Text>
+                                <Text style={styles.reportButtonText}>Report</Text>
                             </TouchableOpacity>
                         )
                     )}
@@ -133,27 +150,43 @@ export function ChatView({
                     </View>
                 </Modal>
 
-            <FlatList
+              <FlatList
                 ref={flatListRef}
                 onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
                 data={messages}
                 keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <View style={[
-                        styles.message,
-                        item.senderId === currentUserUid
-                            ? styles.ownMessage
-                            : styles.otherMessage,
-                        ]}>
-                        <Text style={item.senderId === currentUserUid ? styles.ownMessageText : styles.otherMessageText}>
-                            {item.text}
-                        </Text>
-                        <Text style={styles.timestamp}>{formatTime(item.createdAt)}</Text>
-                    </View>
-                )}
-            />
+                renderItem={({ item }) => {
+                    const isOwn = item.senderId === currentUserUid;
+                    if (isOwn) {
+                        return (
+                            <View style={[styles.message, styles.ownMessage]}>
+                                <Text style={styles.ownMessageText}>{item.text}</Text>
+                                <Text style={styles.timestamp}>{formatTime(item.createdAt)}</Text>
+                            </View>
+                        );
+                    }
+                    
+                    return (
+                        <View style={styles.otherMessageRow}>
+                            <Image
+                                source={
+                                    friendImage
+                                    ? { uri: friendImage }
+                                    : require('../../../assets/favicon.png')
+                                } 
+                                style={styles.avatar}
+                            />
 
-            <View style={styles.inputRow}>
+                        <View style={[styles.message, styles.otherMessage]}>
+                            <Text style={styles.otherMessageText}>{item.text}</Text>
+                            <Text style={styles.timestamp}>{formatTime(item.createdAt)}</Text>
+                        </View>
+                    </View>
+                    );
+                }}
+              />
+
+              <View style={styles.inputRow}>
                 <TextInput
                     value={text}
                     onChangeText={setText}
@@ -164,8 +197,8 @@ export function ChatView({
                 <TouchableOpacity onPress={handleSend} disabled={chatClosed || !text.trim()}>
                     <Text style={{ ...styles.send, color: chatClosed || !text.trim() ? '#999' : '#ffffff' }}>Send</Text>
                 </TouchableOpacity>
-            </View>
-        </View>
+              </View>
+            </LinearGradient>
         </KeyboardAvoidingView>
     );
 };
@@ -179,24 +212,36 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff' 
     },
 
-    header: { 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        flex: 0,
-        gap: 12, 
-        marginBottom: 8, 
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 8, 
-        backgroundColor: '#fff', 
-        paddingBottom: 8,
-        borderBottomWidth: 1, 
-        borderBottomColor: '#000000',
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        backgroundColor: '#ffffff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e5e5',
+    },
+    
+    headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+
+    headerAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        marginHorizontal: 8,
     },
     
     backArrow: { 
-        fontSize: 45,
-        marginLeft: 4, 
-        color: '#000' 
+        fontSize: 35, 
+        color: '#000', 
+        marginRight: 8,
+        lineHeight: 35,
+        textAlignVertical: 'center',
+        marginTop: -4,
     },
 
     headerName: { 
@@ -206,12 +251,20 @@ const styles = StyleSheet.create({
     },
 
     reportButton: { 
+        backgroundColor: '#e53935',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+    },
+
+    reportButtonText: {
+        color: '#ffffff',
         fontSize: 14,
-        color: 'red' 
+        fontWeight: '600',
     },
 
     blockedText: { 
-        color: 'red',
+        color: '#fff',
         fontSize: 14, 
         fontWeight: '600' 
     },
@@ -229,7 +282,7 @@ const styles = StyleSheet.create({
         marginLeft: 10 
     },
 
-    ownMessage: { backgroundColor: '#000000', 
+    ownMessage: { backgroundColor: '#332e2e', 
         borderRadius: 10, 
         alignSelf: 'flex-end', 
         marginRight: 10 
@@ -246,7 +299,7 @@ const styles = StyleSheet.create({
     },
 
     otherMessageText: { 
-        color: '#000', 
+        color: '#000000', 
         fontSize: 16 
     },
 
@@ -262,13 +315,15 @@ const styles = StyleSheet.create({
         alignItems: 'center', 
         padding: 10, 
         backgroundColor: '#fff', 
-        justifyContent: 'space-between' 
+        justifyContent: 'space-between', 
+        borderColor: '#000',
+        borderTopWidth: 1,
     },
 
     input: { 
         flex: 1, 
         borderWidth: 2, 
-        borderColor: '#000000', 
+        borderColor: '#696565', 
         borderRadius: 8, 
         padding: 8
     },
@@ -280,6 +335,20 @@ const styles = StyleSheet.create({
         marginLeft: 3, 
         padding: 6, 
         borderRadius: 10 
+    },
+
+    avatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 8,
+    },
+
+    otherMessageRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        marginLeft: 10,
+        marginVertical: 4,
     },
 
 

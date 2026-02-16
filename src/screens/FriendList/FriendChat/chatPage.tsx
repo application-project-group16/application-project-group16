@@ -27,6 +27,7 @@ const ChatPage = () => {
     const currentUserUid = user?.uid;
     const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
     const [selectedFriendName, setSelectedFriendName] = useState<string | null>(null);
+    const [selectedFriendImage, setSelectedFriendImage] = useState<string | null>(null);
 
     const openChatWithFriend = async (friendUid: string): Promise<string | null> => {
         if (!currentUserUid) { 
@@ -75,6 +76,7 @@ const ChatPage = () => {
                 <ChatView
                     chatId={selectedChatId}
                     friendName={selectedFriendName || 'Chat'}
+                    friendImage={selectedFriendImage || ''}
                     onBack={() => {
                         setSelectedChatId(null)
                         setSelectedFriendName(null)
