@@ -20,7 +20,6 @@ import ChatPage from '../screens/FriendList/FriendChat/chatPage';
 import UserStatisticsViewModel from '../screens/UserStatistics/UserStatisticsViewModel';
 import { gradients } from '../Models/Gradient';
 import { Text } from 'react-native';
-
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createStackNavigator();
 const RootStack = createStackNavigator();
@@ -109,6 +108,7 @@ function MainTabs() {
       <Tab.Screen 
         name="FriendList" 
         component={ChatPage}
+
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ color, size }) => (

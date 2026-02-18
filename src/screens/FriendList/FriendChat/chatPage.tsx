@@ -17,6 +17,7 @@ const ChatPage = () => {
             if (userSnap.exists()) {
             const friendData = userSnap.data();
             setSelectedFriendName(friendData.name || 'Unknown');
+            setSelectedFriendImage(friendData.image || null);
             }
 
             setSelectedChatId(chatId);
@@ -76,10 +77,11 @@ const ChatPage = () => {
                 <ChatView
                     chatId={selectedChatId}
                     friendName={selectedFriendName || 'Chat'}
-                    friendImage={selectedFriendImage || ''}
+                    friendImage={selectedFriendImage}
                     onBack={() => {
                         setSelectedChatId(null)
                         setSelectedFriendName(null)
+                        setSelectedFriendImage(null)
                     }}
                 />
             ) : (

@@ -1,9 +1,10 @@
-import { useRef, useState,} from 'react';
+import { useRef, useState, useEffect} from 'react';
 import { View, Image, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, Modal, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useChatViewModel } from './ChatViewModel';
 import { handleReportSubmit, useChatClosed, useHasReported } from '../../../Services/Reports';
 import { gradients } from '../../../Models/Gradient'
 import { LinearGradient } from 'expo-linear-gradient';
+import { requestNotificationPermissions } from '../../../Services/messageNotification';
 
 export function ChatView({ 
     chatId, 
@@ -16,12 +17,20 @@ export function ChatView({
     friendImage: string | null,
     onBack: () => void }) {
 
-    const { messages, sendMessage, currentUserUid, chatClosed, hasReported } = useChatViewModel(chatId);
+    const { messages, sendMessage, currentUserUid, chatClosed, hasReported, setOtherUserName } = useChatViewModel(chatId);
     const [text, setText] = useState('');
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportReason, setReportReason] = useState('');
     const flatListRef = useRef<FlatList>(null);
     
+
+    useEffect(() => {
+        if (friendName) {
+            setOtherUserName(friendName);
+        }
+        
+        requestNotificationPermissions();
+    }, [friendName, setOtherUserName]);
 
     const handleSend = async () => {
         if (!text.trim()) return;
@@ -71,7 +80,7 @@ export function ChatView({
                     <Image
                         source={
                             friendImage
-                                ? { uri: friendImage }
+                                ? { uri: friendImage}
                                 : require('../../../assets/favicon.png')
                         }
                         style={styles.headerAvatar}
@@ -173,7 +182,7 @@ export function ChatView({
                                     friendImage
                                     ? { uri: friendImage }
                                     : require('../../../assets/favicon.png')
-                                } 
+                                }
                                 style={styles.avatar}
                             />
 

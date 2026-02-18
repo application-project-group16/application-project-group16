@@ -1,89 +1,95 @@
 
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native'
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, ListRenderItem } from 'react-native'
 import { useFriendListViewModel } from './FriendListViewModel'
 import { gradients } from '../../Models/Gradient'
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useMemo, useCallback, memo } from 'react';
+import { Friend } from './FriendListViewModel';
 
 type props = {
   onSelectFriend: (friendId: string) => void
 }
 
+const FriendCard = memo(({ friend, onPress }: { friend: Friend; onPress: (uid: string) => void }) => {
+  const isUnread = friend.unreadCount && friend.unreadCount > 0;
+  const unreadNameStyle = isUnread ? styles.unreadName : styles.name;
+  
+  return (
+    <TouchableOpacity 
+      style={[styles.card, isUnread ? styles.unreadGlow : null]}
+      activeOpacity={0.8} 
+      onPress={() => onPress(friend.uid)}
+    >
+      <Image
+        source={
+          friend.image && friend.image.trim().length > 0
+            ? { uri: friend.image }
+            : require('../../assets/favicon.png')
+        }
+        style={styles.avatar}
+      />
+      <View style={styles.info}>
+        <Text 
+          style={unreadNameStyle}
+          numberOfLines={1}
+          ellipsizeMode='tail'
+        >
+          {friend.name}
+        </Text>
+        {friend.sports?.length ? (
+          <Text style={styles.sports} numberOfLines={1}>{friend.sports.join(', ')}</Text> 
+        ) : null}
+      </View>
+
+      <Ionicons 
+        name={isUnread ? "chatbubbles" : "chatbubbles-outline"}
+        size={20} 
+        color="#2b7cff" 
+        style={styles.chatIcon} 
+      />
+      <Ionicons
+        name="chevron-forward"
+        size={22}
+        color="#999"
+      />
+    </TouchableOpacity>
+  );
+});
+
 const FriendListScreen = ({ onSelectFriend }: props) => {
   const { friends } = useFriendListViewModel()
  
-  const sortedFriends = [...friends].sort((a, b) => {
-    if (a.lastMessageTime && b.lastMessageTime) {
-      const aUnread = a.unreadCount ?? 0;
-      const bUnread = b.unreadCount ?? 0;
-
-      if (aUnread > 0 && bUnread === 0) return -1;
-      if (aUnread === 0 && bUnread > 0) return 1;
+  const sortedFriends = useMemo(() => {
+    return [...friends].sort((a, b) => {
 
       const aTime = a.lastMessageTime?.seconds ?? 0;
       const bTime = b.lastMessageTime?.seconds ?? 0;
-
       return bTime - aTime;
-    }
-    return 0;
-  });
+    });
+  }, [friends]);
 
- return (
-  <LinearGradient colors={gradients.friendListBackground} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.container}>
-    <FlatList
-      data={sortedFriends}
-      keyExtractor={(friend, index) => friend.uid ?? `friend-${index}`}
-      contentContainerStyle={styles.list}
-      renderItem={({ item: friend }) => {
-        const isUnread = friend.unreadCount && friend.unreadCount > 0;
-        
-        return (
-        <TouchableOpacity 
-        style={[
-          styles.card, friend.unreadCount && friend.unreadCount > 0 ? styles.unreadGlow : null]} 
-          activeOpacity={0.8} onPress={() => onSelectFriend(friend.uid)}>
-          <Image
-            source={
-              friend.image && friend.image.trim().length > 0
-                ? { uri: friend.image }
-                : require('../../assets/favicon.png')
-            }
-            style={styles.avatar}
-          />
-        <View style={styles.info}>
-          <Text 
-          style={[
-            styles.name,
-            isUnread && { fontWeight: "bold", color: "#2b7cff" }
-          ]}
-          numberOfLines={1}
-          ellipsizeMode='tail'
-          >
-            {friend.name}
-          </Text>
-          {friend.sports?.length ? (
-          <Text style={styles.sports} numberOfLines={1}>{friend.sports.join(', ')}</Text> 
-          ) : null}
-        </View>
+  const handleSelectFriend = useCallback((friendId: string) => {
+    onSelectFriend(friendId);
+  }, [onSelectFriend]);
 
-          <Ionicons 
-            name={isUnread ? "chatbubbles" : "chatbubbles-outline"}
-            size={20} 
-            color="#2b7cff" 
-            style={styles.chatIcon} 
-          />
-          <Ionicons
-            name="chevron-forward"
-            size={22}
-            color="#999"
-          />
-        </TouchableOpacity>
-        
-      )}}
-    />
-  </LinearGradient>
+  const renderFriendItem: ListRenderItem<Friend> = useCallback(({ item: friend }) => (
+    <FriendCard friend={friend} onPress={handleSelectFriend} />
+  ), [handleSelectFriend]);
 
-  )
+  return (
+    <LinearGradient colors={gradients.friendListBackground} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.container}>
+      <FlatList
+        data={sortedFriends}
+        keyExtractor={(friend) => friend.uid}
+        contentContainerStyle={styles.list}
+        renderItem={renderFriendItem}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+      />
+    </LinearGradient>
+  );
 }
 
 export default FriendListScreen
@@ -126,6 +132,12 @@ const styles = StyleSheet.create({
 
     name: { 
       fontSize: 18, 
+    },
+
+    unreadName: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: "#2b7cff",
     },
 
     sports: { 
