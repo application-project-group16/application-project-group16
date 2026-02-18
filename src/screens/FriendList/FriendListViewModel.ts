@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { User } from '../../Models/User';
 import { db, collection, doc, query, where, onSnapshot } from '../../firebase/Config';
 import { useAuth } from '../../context/AuthContext';
-import { sendMessageNotification } from './FriendChat/LocalNotification/messageNotification';
+import { sendMessageNotification } from '../../Services/messageNotification';
 
 interface Friend extends User {
     uid: string;

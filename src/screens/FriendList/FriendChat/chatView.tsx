@@ -4,7 +4,7 @@ import { useChatViewModel } from './ChatViewModel';
 import { handleReportSubmit, useChatClosed, useHasReported } from '../../../Services/Reports';
 import { gradients } from '../../../Models/Gradient'
 import { LinearGradient } from 'expo-linear-gradient';
-import { requestNotificationPermissions } from './LocalNotification/messageNotification';
+import { requestNotificationPermissions } from '../../../Services/messageNotification';
 
 export function ChatView({ 
     chatId, 
@@ -80,7 +80,7 @@ export function ChatView({
                     <Image
                         source={
                             friendImage
-                                ? { uri: friendImage }
+                                ? { uri: friendImage}
                                 : require('../../../assets/favicon.png')
                         }
                         style={styles.headerAvatar}
@@ -182,7 +182,7 @@ export function ChatView({
                                     friendImage
                                     ? { uri: friendImage }
                                     : require('../../../assets/favicon.png')
-                                } 
+                                }
                                 style={styles.avatar}
                             />
 
