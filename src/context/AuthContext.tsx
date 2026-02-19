@@ -14,7 +14,6 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// authia antava komponentti
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -46,12 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return unsubscribe;
 }, []);
 
-    // Testi käyttäjän kirjautumine 
     const login = async (email: string, password: string) => {
         await signInWithEmailAndPassword(auth, email, password);
     };
 
-    // Testi käytäjän rekisteröinti
     const register = async (name: string, email: string, age: number, gender: string, city: string, sports: string[], password: string, bio?: string) => {
         const credentials = await createUserWithEmailAndPassword(auth, email, password);
         const newUser: User = {
